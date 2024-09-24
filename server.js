@@ -17,7 +17,7 @@ dotenv.config();
 
 // rota get - listar
 app.get('/produtos', async (req, res) => {
-    const products = await prisma.products.findMany()
+    const products = await prisma.produto.findMany();
     res.status(200).json(products)
 })
 

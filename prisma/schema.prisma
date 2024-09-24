@@ -1,0 +1,18 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+model Produto {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  descricao   String   @unique
+  quartos     Int
+  banheiros   Int
+  garagem     Int
+  preco       Float
+  fotos       Bytes    // Campo para armazenar os dados binários das fotos
+}

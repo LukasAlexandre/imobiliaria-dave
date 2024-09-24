@@ -14,5 +14,4 @@ model Produto {
   banheiros   Int
   garagem     Int
   preco       Float
-  fotos       Bytes    // Campo para armazenar os dados binários das fotos
 }

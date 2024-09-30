@@ -6,16 +6,16 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// variaveis
-
+// Variáveis
 const app = express();
 const prisma = new PrismaClient();
 const port = process.env.PORT || 3000;
+
 // Middleware de upload do multer
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-//functions 
+// Funções
 connectDB();
 dotenv.config();
 app.use(express.json());
@@ -32,58 +32,61 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-app.use(express.json());
-
 // Rota POST para upload de arquivos e dados do produto
-app.post('/produtos', upload.single('fotos'), async (req, res) => {
+app.post('/produtos', upload.fields([
+    { name: 'foto01' },
+    { name: 'foto02' },
+    { name: 'foto03' },
+    { name: 'foto04' },
+    { name: 'foto05' },
+    { name: 'foto06' },
+    { name: 'foto07' },
+    { name: 'foto08' },
+    { name: 'foto09' },
+    { name: 'foto10' }
+]), async (req, res) => {
     console.log('req.body:', req.body);
-    console.log('req.file:', req.file);
-    if (!req.file) {
-        return res.status(400).send('Nenhum arquivo foi enviado.');
-    }
-    
-    const filePath = path.join(__dirname, 'uploads', req.file.filename);
+    console.log('req.files:', req.files);
 
-    // Simulando uma resposta bem-sucedida, substitua isso com sua lógica de banco de dados
-    res.status(201).json({
+    const data = {
         descricao: req.body.descricao,
-        quartos: req.body.quartos,
-        banheiros: req.body.banheiros,
-        garagem: req.body.garagem,
-        preco: req.body.preco,
-        fotos: filePath // Caminho da foto
-    });
+        quartos: parseInt(req.body.quartos),
+        banheiros: parseInt(req.body.banheiros),
+        garagem: parseInt(req.body.garagem),
+        preco: parseFloat(req.body.preco),
+    };
+
+    // Adicione as fotos se existirem
+    for (let i = 1; i <= 10; i++) {
+        if (req.files[`foto0${i}`] && req.files[`foto0${i}`].length > 0) {
+            data[`foto0${i}`] = req.files[`foto0${i}`][0].path;
+        }
+    }
+
+    console.log('Dados do produto:', data);
+
+    try {
+        const produto = await prisma.produto.create({ data });
+        res.status(201).json(produto);
+    } catch (error) {
+        console.error('Erro ao criar produto:', error);
+        res.status(500).json({ error: 'Erro ao criar produto' });
+    }
 });
 
 
-// // rota put - editar
-// app.put('/produtos/:id', async (req, res) => {
+// Rota GET para listar todos os produtos
+app.get('/produtos', async (req, res) => {
+    try {
+        const produtos = await prisma.produto.findMany(); // Recupera todos os produtos
+        res.status(200).json(produtos); 
+    } catch (error) {
+        console.error('Erro ao listar produtos:', error);
+        res.status(500).json({ error: 'Erro ao listar produtos' });
+    }
+});
 
-//     await prisma.user.update({
-//         where: {
-//             id: req.params.id
-//         },
-//         data: {
-//             email: req.body.email,
-//             name: req.body.name,
-//             age: req.body.age
-//         }
-//     })
-//     res.status(201).json(req.body)
-// })
-// rota delete - deletar
-// app.delete('/produtos/:id', async (req, res) => {
-
-//     await prisma.user.delete({
-//         where: {
-//             id: req.params.id
-//         }
-//     })
-//     res.status(200).json({message: 'usuário deletado com sucesso'})
-// })
-
-
-
+// Iniciando o servidor
 app.listen(port, () => {
-    console.log(`O servidor está rodando na porta ${port}`)
+    console.log(`O servidor está rodando na porta ${port}`);   
 });

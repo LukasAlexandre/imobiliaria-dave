@@ -1,10 +1,72 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Produtos</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .product-info {
+            width: 60%;
+        }
+
+        .product-info h2 {
+            color: #007bff;
+        }
+
+        .product-info p {
+            margin: 5px 0;
+        }
+
+        .product-info .price {
+            font-size: 20px;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .product-images {
+            width: 35%;
+        }
+
+        .product-images img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .empty-message {
+            text-align: center;
+            font-size: 18px;
+            color: #777;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -75,7 +137,8 @@
 
         #jsonOutput {
             margin-top: 10px;
-            white-space: pre-wrap; /* Para manter a formatação do JSON */
+            white-space: pre-wrap;
+            /* Para manter a formatação do JSON */
             background-color: #f8f9fa;
             border: 1px solid #ccc;
             padding: 10px;
@@ -83,6 +146,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <form id="uploadForm">
@@ -92,7 +156,7 @@
         <input type="number" name="banheiros" placeholder="Banheiros" required>
         <input type="number" name="garagem" placeholder="Garagem" required>
         <input type="number" name="preco" placeholder="Preço" required>
-        
+
         <div class="file-label">Selecione as fotos:</div>
         <input type="file" id="foto01" name="foto01" accept="image/*">
         <input type="file" id="foto02" name="foto02" accept="image/*">
@@ -106,15 +170,22 @@
         <input type="file" id="foto10" name="foto10" accept="image/*">
 
         <button type="submit">Enviar</button>
-    </form>
 
+    </form>
+    <div class="container">
+        <h1>Lista de Produtos</h1>
+        <div id="productList" class="product-list">
+            <!-- Os produtos serão carregados aqui -->
+        </div>
+    </div>
     <div id="message" style="display: none;"></div>
     <div id="jsonOutput" style="display: none;"></div>
 
     <script>
+        fetchProducts();
         document.getElementById('uploadForm').onsubmit = async function (event) {
             event.preventDefault();
-            
+
             const formData = new FormData(this);
 
             try {
@@ -140,6 +211,64 @@
                 document.getElementById('message').style.display = 'block';
             }
         };
+        async function fetchProducts() {
+            try {
+                const response = await fetch('http://localhost:3000/produtos');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const products = await response.json();
+                console.log('Produtos recebidos:', products); // Log dos produtos
+
+                const productList = document.getElementById('productList');
+                productList.innerHTML = ''; // Limpar a lista antes de adicionar novos produtos
+
+                if (products.length === 0) {
+                    productList.innerHTML = '<p class="empty-message">Nenhum produto encontrado.</p>';
+                    return;
+                }
+
+                products.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card';
+
+                    const productInfo = document.createElement('div');
+                    productInfo.className = 'product-info';
+
+                    productInfo.innerHTML = `
+                <h2>${product.descricao}</h2>
+                <p>Quartos: ${product.quartos}</p>
+                <p>Banheiros: ${product.banheiros}</p>
+                <p>Garagem: ${product.garagem}</p>
+                <p class="price">R$ ${product.preco.toFixed(2)}</p>
+            `;
+
+                    const productImages = document.createElement('div');
+                    productImages.className = 'product-images';
+
+                    // Exibir as fotos
+                    for (let i = 1; i <= 10; i++) {
+                        const photoField = `foto0${i}`;
+                        if (product[photoField]) {
+                            const img = document.createElement('img');
+                            img.src = product[photoField]; // Verifique se as URLs das imagens estão corretas
+                            img.alt = `Foto do produto ${i}`;
+                            productImages.appendChild(img);
+                        }
+                    }
+
+                    productCard.appendChild(productInfo);
+                    productCard.appendChild(productImages);
+                    productList.appendChild(productCard);
+                });
+            } catch (error) {
+                console.error('Erro ao buscar produtos:', error);
+            }
+        }
+
+
     </script>
 </body>
+
 </html>

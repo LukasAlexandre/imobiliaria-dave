@@ -5,6 +5,7 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cors from 'cors';
 
 // Variáveis
 const app = express();
@@ -19,6 +20,7 @@ const __dirname = path.dirname(__filename);
 connectDB();
 dotenv.config();
 app.use(express.json());
+app.use(cors());
 
 // Configuração de destino e nome do arquivo para upload
 const storage = multer.diskStorage({
@@ -77,12 +79,14 @@ app.post('/produtos', upload.fields([
 
 // Rota GET para listar todos os produtos
 app.get('/produtos', async (req, res) => {
+    console.log('Recebida uma requisição para a rota /produtos');
     try {
-        const produtos = await prisma.produto.findMany(); // Recupera todos os produtos
-        res.status(200).json(produtos); 
+        const produtos = await prisma.produto.findMany();
+        console.log('Produtos encontrados:', produtos);
+        res.json(produtos);
     } catch (error) {
-        console.error('Erro ao listar produtos:', error);
-        res.status(500).json({ error: 'Erro ao listar produtos' });
+        console.error('Erro ao buscar produtos:', error);
+        res.status(500).send('Erro ao buscar produtos');
     }
 });
 

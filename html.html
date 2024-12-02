@@ -5,10 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Produtos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
             padding: 20px;
         }
 
@@ -17,77 +20,19 @@
             margin: 0 auto;
         }
 
-        h1 {
+        h1, h2 {
             text-align: center;
-            color: #333;
-        }
-
-        .product-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
-
-        .product-info {
-            width: 60%;
-        }
-
-        .product-info h2 {
-            color: #007bff;
-        }
-
-        .product-info p {
-            margin: 5px 0;
-        }
-
-        .product-info .price {
-            font-size: 20px;
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        .product-images {
-            width: 35%;
-        }
-
-        .product-images img {
-            width: 100%;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .empty-message {
-            text-align: center;
-            font-size: 18px;
-            color: #777;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+            color: #444;
         }
 
         #uploadForm {
-            background: white;
+            background: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 400px;
-        }
-
-        h2 {
-            text-align: center;
-            color: #333;
+            width: 100%;
+            max-width: 500px;
+            margin: 20px auto;
         }
 
         input[type="text"],
@@ -97,58 +42,98 @@
             width: 100%;
             padding: 10px;
             margin: 10px 0;
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
         }
 
         button {
-            background-color: #28a745;
+            background-color: #007bff;
             color: white;
+            font-weight: bold;
             border: none;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
 
         button:hover {
-            background-color: #218838;
-        }
-
-        input[type="file"] {
-            border: none;
-            padding: 0;
+            background-color: #0056b3;
         }
 
         .file-label {
-            background-color: #e9ecef;
+            background-color: #f1f1f1;
             padding: 10px;
-            border-radius: 4px;
             text-align: center;
-            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .product-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .product-info h2 {
+            color: #007bff;
+            margin: 0 0 10px;
+        }
+
+        .product-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .product-info .price {
+            font-size: 18px;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .product-images img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .empty-message {
+            text-align: center;
+            font-size: 18px;
+            color: #777;
         }
 
         #message {
-            margin-top: 20px;
+            display: none;
+            margin: 10px auto;
             padding: 10px;
-            border: 1px solid #28a745;
+            text-align: center;
             border-radius: 4px;
-            background-color: #e9ffe9;
-            color: #28a745;
+            max-width: 500px;
         }
 
-        #jsonOutput {
-            margin-top: 10px;
-            white-space: pre-wrap;
-            /* Para manter a formatação do JSON */
-            background-color: #f8f9fa;
-            border: 1px solid #ccc;
-            padding: 10px;
-            border-radius: 4px;
+        .loading {
+            text-align: center;
+            font-size: 16px;
+            color: #888;
+            margin: 20px 0;
         }
     </style>
 </head>
 
 <body>
-
     <form id="uploadForm">
         <h2>Cadastro de Produtos</h2>
         <input type="text" name="descricao" placeholder="Descrição" required>
@@ -156,118 +141,88 @@
         <input type="number" name="banheiros" placeholder="Banheiros" required>
         <input type="number" name="garagem" placeholder="Garagem" required>
         <input type="number" name="preco" placeholder="Preço" required>
-
         <div class="file-label">Selecione as fotos:</div>
-        <input type="file" id="foto01" name="foto01" accept="image/*">
-        <input type="file" id="foto02" name="foto02" accept="image/*">
-        <input type="file" id="foto03" name="foto03" accept="image/*">
-        <input type="file" id="foto04" name="foto04" accept="image/*">
-        <input type="file" id="foto05" name="foto05" accept="image/*">
-        <input type="file" id="foto06" name="foto06" accept="image/*">
-        <input type="file" id="foto07" name="foto07" accept="image/*">
-        <input type="file" id="foto08" name="foto08" accept="image/*">
-        <input type="file" id="foto09" name="foto09" accept="image/*">
-        <input type="file" id="foto10" name="foto10" accept="image/*">
-
+        <input type="file" name="foto01" accept="image/*">
+        <input type="file" name="foto02" accept="image/*">
+        <input type="file" name="foto03" accept="image/*">
+        <input type="file" name="foto04" accept="image/*">
+        <input type="file" name="foto05" accept="image/*">
+        <input type="file" name="foto06" accept="image/*">
+        <input type="file" name="foto07" accept="image/*">
+        <input type="file" name="foto08" accept="image/*">
+        <input type="file" name="foto09" accept="image/*">
+        <input type="file" name="foto10" accept="image/*">
         <button type="submit">Enviar</button>
-
     </form>
     <div class="container">
         <h1>Lista de Produtos</h1>
-        <div id="productList" class="product-list">
-            <!-- Os produtos serão carregados aqui -->
-        </div>
+        <div id="productList" class="product-list"></div>
+        <p id="message"></p>
     </div>
-    <div id="message" style="display: none;"></div>
-    <div id="jsonOutput" style="display: none;"></div>
-
     <script>
         fetchProducts();
+
         document.getElementById('uploadForm').onsubmit = async function (event) {
             event.preventDefault();
-
             const formData = new FormData(this);
+            const message = document.getElementById('message');
+            message.style.display = 'none';
 
             try {
-                const response = await fetch('http://localhost:3000/produtos', { // Corrigido para a porta 3000
+                const response = await fetch('http://localhost:3000/produtos', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
                 });
 
                 if (!response.ok) throw new Error('Erro ao enviar o produto');
-
                 const result = await response.json();
-                console.log('Produto criado:', result);
-
-                // Mostrar mensagem de sucesso e dados em JSON
-                document.getElementById('message').innerText = 'Produto enviado com sucesso!';
-                document.getElementById('jsonOutput').innerText = JSON.stringify(result, null, 2); // Formata o JSON
-                document.getElementById('message').style.display = 'block';
-                document.getElementById('jsonOutput').style.display = 'block';
+                message.textContent = 'Produto enviado com sucesso!';
+                message.style.color = '#28a745';
+                message.style.display = 'block';
+                fetchProducts(); // Atualiza a lista
             } catch (error) {
-                console.error('Erro:', error);
-                document.getElementById('message').innerText = 'Erro ao enviar o produto';
-                document.getElementById('message').style.color = 'red';
-                document.getElementById('message').style.display = 'block';
+                message.textContent = 'Erro ao enviar o produto.';
+                message.style.color = 'red';
+                message.style.display = 'block';
             }
         };
+
         async function fetchProducts() {
+            const productList = document.getElementById('productList');
+            productList.innerHTML = '<p class="loading">Carregando produtos...</p>';
             try {
                 const response = await fetch('http://localhost:3000/produtos');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
                 const products = await response.json();
-                console.log('Produtos recebidos:', products); // Log dos produtos
-
-                const productList = document.getElementById('productList');
-                productList.innerHTML = ''; // Limpar a lista antes de adicionar novos produtos
-
+                productList.innerHTML = '';
                 if (products.length === 0) {
                     productList.innerHTML = '<p class="empty-message">Nenhum produto encontrado.</p>';
                     return;
                 }
-
                 products.forEach(product => {
-                    const productCard = document.createElement('div');
-                    productCard.className = 'product-card';
-
-                    const productInfo = document.createElement('div');
-                    productInfo.className = 'product-info';
-
-                    productInfo.innerHTML = `
-                <h2>${product.descricao}</h2>
-                <p>Quartos: ${product.quartos}</p>
-                <p>Banheiros: ${product.banheiros}</p>
-                <p>Garagem: ${product.garagem}</p>
-                <p class="price">R$ ${product.preco.toFixed(2)}</p>
-            `;
-
-                    const productImages = document.createElement('div');
-                    productImages.className = 'product-images';
-
-                    // Exibir as fotos
-                    for (let i = 1; i <= 10; i++) {
-                        const photoField = `foto0${i}`;
-                        if (product[photoField]) {
-                            const img = document.createElement('img');
-                            img.src = product[photoField]; // Verifique se as URLs das imagens estão corretas
-                            img.alt = `Foto do produto ${i}`;
-                            productImages.appendChild(img);
-                        }
-                    }
-
-                    productCard.appendChild(productInfo);
-                    productCard.appendChild(productImages);
-                    productList.appendChild(productCard);
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    const info = `
+                        <div class="product-info">
+                            <h2>${product.descricao}</h2>
+                            <p>Quartos: ${product.quartos}</p>
+                            <p>Banheiros: ${product.banheiros}</p>
+                            <p>Garagem: ${product.garagem}</p>
+                            <p class="price">R$ ${product.preco.toFixed(2)}</p>
+                        </div>`;
+                    const images = `
+                        <div class="product-images">
+                            ${[...Array(10).keys()].map(i => {
+                                const key = `foto0${i + 1}`;
+                                return product[key] ? `<img src="${product[key]}" alt="Foto do produto">` : '';
+                            }).join('')}
+                        </div>`;
+                    card.innerHTML = info + images;
+                    productList.appendChild(card);
                 });
             } catch (error) {
-                console.error('Erro ao buscar produtos:', error);
+                productList.innerHTML = '<p class="empty-message">Erro ao carregar produtos.</p>';
             }
         }
-
-
     </script>
 </body>
 

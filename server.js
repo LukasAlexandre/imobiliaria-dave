@@ -34,6 +34,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Rota POST para upload de arquivos e dados do produto
 app.post('/produtos', upload.fields([
     { name: 'foto01' },

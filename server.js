@@ -6,6 +6,7 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
+import fs from 'fs';
 
 // Variáveis
 const app = express();
@@ -52,7 +53,6 @@ app.post('/produtos', upload.fields([
     console.log('req.body:', req.body);
     console.log('req.files:', req.files);
 
-    // Cria o objeto com os dados básicos do produto
     const data = {
         descricao: req.body.descricao,
         quartos: parseInt(req.body.quartos),
@@ -61,7 +61,6 @@ app.post('/produtos', upload.fields([
         preco: parseFloat(req.body.preco),
     };
 
-    // Adiciona as URLs completas para as imagens, se existirem
     const baseUrl = process.env.BASE_URL || `http://localhost:${port}`;
     for (let i = 1; i <= 10; i++) {
         if (req.files[`foto0${i}`] && req.files[`foto0${i}`].length > 0) {
@@ -69,10 +68,7 @@ app.post('/produtos', upload.fields([
         }
     }
 
-    console.log('Dados do produto:', data);
-
     try {
-        // Cria o produto no banco de dados
         const produto = await prisma.produto.create({ data });
         res.status(201).json(produto);
     } catch (error) {
@@ -81,8 +77,6 @@ app.post('/produtos', upload.fields([
     }
 });
 
-
-
 // Rota GET para listar todos os produtos
 app.get('/produtos', async (req, res) => {
     const baseUrl = process.env.BASE_URL || `http://localhost:${port}`;
@@ -90,7 +84,6 @@ app.get('/produtos', async (req, res) => {
     try {
         const produtos = await prisma.produto.findMany();
 
-        // Atualizar os caminhos das imagens para URLs completas
         const produtosComImagens = produtos.map(produto => {
             for (let i = 1; i <= 10; i++) {
                 const fotoKey = `foto0${i}`;
@@ -108,7 +101,79 @@ app.get('/produtos', async (req, res) => {
     }
 });
 
+// Rota PUT para editar um produto existente
+app.put('/produtos/:id', upload.fields([
+    { name: 'foto01' },
+    { name: 'foto02' },
+    { name: 'foto03' },
+    { name: 'foto04' },
+    { name: 'foto05' },
+    { name: 'foto06' },
+    { name: 'foto07' },
+    { name: 'foto08' },
+    { name: 'foto09' },
+    { name: 'foto10' }
+]), async (req, res) => {
+    const { id } = req.params;
+    const { descricao, quartos, banheiros, garagem, preco } = req.body;
+    const data = { descricao, quartos: parseInt(quartos), banheiros: parseInt(banheiros), garagem: parseInt(garagem), preco: parseFloat(preco) };
 
+    const baseUrl = process.env.BASE_URL || `http://localhost:${port}`;
+    for (let i = 1; i <= 10; i++) {
+        if (req.files[`foto0${i}`] && req.files[`foto0${i}`].length > 0) {
+            data[`foto0${i}`] = `${baseUrl}/uploads/${req.files[`foto0${i}`][0].filename}`;
+        }
+    }
+
+    try {
+        const produto = await prisma.produto.update({
+            where: { id: parseInt(id) },
+            data,
+        });
+
+        res.status(200).json(produto);
+    } catch (error) {
+        console.error('Erro ao editar produto:', error);
+        res.status(500).json({ error: 'Erro ao editar produto' });
+    }
+});
+
+// Rota DELETE para excluir um produto
+app.delete('/produtos/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Primeiro, obter o produto para pegar os arquivos de imagem
+        const produto = await prisma.produto.findUnique({
+            where: { id: parseInt(id) },
+        });
+
+        if (!produto) {
+            return res.status(404).json({ error: 'Produto não encontrado' });
+        }
+
+        // Deletar as imagens do sistema de arquivos (caso existam)
+        for (let i = 1; i <= 10; i++) {
+            const fotoKey = `foto0${i}`;
+            if (produto[fotoKey]) {
+                const fotoPath = path.join(__dirname, 'uploads', path.basename(produto[fotoKey]));
+                if (fs.existsSync(fotoPath)) {
+                    fs.unlinkSync(fotoPath);
+                }
+            }
+        }
+
+        // Deletar o produto do banco de dados
+        await prisma.produto.delete({
+            where: { id: parseInt(id) },
+        });
+
+        res.status(200).json({ message: 'Produto excluído com sucesso' });
+    } catch (error) {
+        console.error('Erro ao excluir produto:', error);
+        res.status(500).json({ error: 'Erro ao excluir produto' });
+    }
+});
 
 // Iniciando o servidor
 app.listen(port, () => {

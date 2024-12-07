@@ -140,17 +140,27 @@ app.put('/produtos/:id', upload.fields([
 
 // Rota DELETE para excluir um produto
 app.delete('/produtos/:id', async (req, res) => {
-    const { id } = req.params;
+    const { id } = req.params;  // ID do produto que será deletado
+  
     try {
-        const produto = await prisma.produto.delete({
-            where: { id: parseInt(id) },
-        });
-        res.status(200).json(produto);
+      // Não é necessário usar parseInt, pois o ID é uma String do MongoDB
+      const produto = await prisma.produto.delete({
+        where: {
+          id: id,  // Passa o ID diretamente como uma String
+        },
+      });
+  
+      res.status(200).json(produto);  // Retorna o produto excluído
     } catch (error) {
-        console.error("Erro ao deletar produto:", error);
-        res.status(500).json({ message: "Erro ao deletar produto", error: error.message });
+      console.error("Erro ao deletar produto:", error);
+      res.status(500).json({
+        message: "Erro ao deletar produtos",
+        error: error.message,
+      });
     }
-});
+  });
+  
+
 
 
 

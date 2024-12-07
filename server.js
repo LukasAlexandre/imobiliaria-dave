@@ -159,7 +159,7 @@ app.delete('/produtosdelete/:id', async (req, res) => {
         return res.status(200).json({ message: "Produto deletado com sucesso!" });
     } catch (error) {
         console.error("Erro ao deletar produto:", error); // Log detalhado do erro
-        return res.status(500).json({ message: "Erro ao deletar produto",  error});
+        return res.status(500).json({ message: "Erro ao deletar produtos",  error});
     }
 });
 

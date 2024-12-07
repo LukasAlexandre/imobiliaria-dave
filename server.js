@@ -141,6 +141,7 @@ app.put('/produtos/:id', upload.fields([
 // Rota DELETE para excluir um produto
 app.delete('/produtos/:id', async (req, res) => {
     try {
+        console.log('req.params:', req.params);
         const { id } = req.params;
         console.log(`Tentando deletar produto com ID: ${id}`); // Verificação
 

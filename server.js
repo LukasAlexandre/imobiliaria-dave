@@ -102,6 +102,7 @@ app.get('/produtos', async (req, res) => {
 });
 
 // Rota PUT para editar um produto existente
+// Rota PUT para editar um produto existente
 app.put('/produtos/:id', upload.fields([
     { name: 'foto01' },
     { name: 'foto02' },
@@ -116,9 +117,13 @@ app.put('/produtos/:id', upload.fields([
 ]), async (req, res) => {
     const { id } = req.params;
     const { descricao, quartos, banheiros, garagem, preco } = req.body;
+
+    // Dados do produto para atualização
     const data = { descricao, quartos: parseInt(quartos), banheiros: parseInt(banheiros), garagem: parseInt(garagem), preco: parseFloat(preco) };
 
     const baseUrl = process.env.BASE_URL || `http://localhost:${port}`;
+
+    // Verifica e atualiza as imagens
     for (let i = 1; i <= 10; i++) {
         if (req.files[`foto0${i}`] && req.files[`foto0${i}`].length > 0) {
             data[`foto0${i}`] = `${baseUrl}/uploads/${req.files[`foto0${i}`][0].filename}`;
@@ -127,16 +132,17 @@ app.put('/produtos/:id', upload.fields([
 
     try {
         const produto = await prisma.produto.update({
-            where: { id: parseInt(id) },
-            data,
+            where: { id: id },  // Busca o produto pelo ID
+            data,               // Dados a serem atualizados
         });
 
-        res.status(200).json(produto);
+        res.status(200).json(produto); // Retorna o produto atualizado
     } catch (error) {
         console.error('Erro ao editar produto:', error);
         res.status(500).json({ error: 'Erro ao editar produto' });
     }
 });
+
 
 // Rota DELETE para excluir um produto
 app.delete('/produtos/:id', async (req, res) => {

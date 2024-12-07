@@ -92,6 +92,7 @@ app.get('/produtos', async (req, res) => {
                 }
             }
             return produto;
+        
         });
 
         res.json(produtosComImagens);

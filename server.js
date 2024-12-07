@@ -142,19 +142,23 @@ app.put('/produtos/:id', upload.fields([
 app.delete('/produtos/:id', async (req, res) => {
     try {
       const { id } = req.params;
-      console.log("Tentando deletar produto com ID:", id); // Depuração
+      console.log(`Tentando deletar produto com ID: ${id}`); // Verificação
+  
       const result = await Product.findByIdAndDelete(id);
+  
       if (!result) {
-        console.log("Produto não encontrado para o ID:", id); // Depuração
+        console.log("Produto não encontrado para o ID:", id); // Verificação
         return res.status(404).json({ message: "Produto não encontrado" });
       }
-      console.log("Produto deletado com sucesso:", result); // Depuração
+  
+      console.log("Produto deletado com sucesso:", result); // Verificação
       return res.status(200).json({ message: "Produto deletado com sucesso!" });
     } catch (error) {
-      console.error("Erro ao deletar produto:", error); // Depuração
+      console.error("Erro ao deletar produto:", error); // Log detalhado do erro
       return res.status(500).json({ message: "Erro ao deletar produto" });
     }
   });
+  
   
 
 // Iniciando o servidor

@@ -85,16 +85,30 @@ app.post('/produtos', upload.fields([
 
 // Rota GET para listar todos os produtos
 app.get('/produtos', async (req, res) => {
-    console.log('Recebida uma requisição para a rota /produtos');
+    const baseUrl = process.env.BASE_URL || `http://localhost:${port}`;
+
     try {
         const produtos = await prisma.produto.findMany();
-        console.log('Produtos encontrados:', produtos);
-        res.json(produtos);
+
+        // Atualizar os caminhos das imagens para URLs completas
+        const produtosComImagens = produtos.map(produto => {
+            for (let i = 1; i <= 10; i++) {
+                const fotoKey = `foto0${i}`;
+                if (produto[fotoKey]) {
+                    produto[fotoKey] = `${baseUrl}/${produto[fotoKey].replace(/\\/g, '/')}`;
+                }
+            }
+            return produto;
+        });
+
+        res.json(produtosComImagens);
     } catch (error) {
         console.error('Erro ao buscar produtos:', error);
         res.status(500).send('Erro ao buscar produtos');
     }
 });
+
+
 
 // Iniciando o servidor
 app.listen(port, () => {

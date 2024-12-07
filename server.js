@@ -141,23 +141,27 @@ app.put('/produtos/:id', upload.fields([
 // Rota DELETE para excluir um produto
 app.delete('/produtos/:id', async (req, res) => {
     try {
-      const { id } = req.params;
-      console.log(`Tentando deletar produto com ID: ${id}`); // Verificação
-  
-      const result = await Product.findByIdAndDelete(id);
-  
-      if (!result) {
-        console.log("Produto não encontrado para o ID:", id); // Verificação
-        return res.status(404).json({ message: "Produto não encontrado" });
-      }
-  
-      console.log("Produto deletado com sucesso:", result); // Verificação
-      return res.status(200).json({ message: "Produto deletado com sucesso!" });
+        const { id } = req.params;
+        console.log(`Tentando deletar produto com ID: ${id}`); // Verificação
+
+        // Verificar se o produto existe antes de tentar excluir
+        const produto = await prisma.produto.findUnique({ where: { id: parseInt(id) } });
+        if (!produto) {
+            console.log("Produto não encontrado para o ID:", id); // Verificação
+            return res.status(404).json({ message: "Produto não encontrado" });
+        }
+
+        // Deletar o produto
+        await prisma.produto.delete({ where: { id: parseInt(id) } });
+
+        console.log("Produto deletado com sucesso:", id); // Verificação
+        return res.status(200).json({ message: "Produto deletado com sucesso!" });
     } catch (error) {
-      console.error("Erro ao deletar produto:", error); // Log detalhado do erro
-      return res.status(500).json({ message: "Erro ao deletar produto" });
+        console.error("Erro ao deletar produto:", error); // Log detalhado do erro
+        return res.status(500).json({ message: "Erro ao deletar produto" });
     }
-  });
+});
+
   
   
 

@@ -141,39 +141,14 @@ app.put('/produtos/:id', upload.fields([
 // Rota DELETE para excluir um produto
 app.delete('/produtos/:id', async (req, res) => {
     const { id } = req.params;
-
     try {
-        // Primeiro, obter o produto para pegar os arquivos de imagem
-        const produto = await prisma.produto.findUnique({
-            where: { id: parseInt(id) },
-        });
-
-        if (!produto) {
-            return res.status(404).json({ error: 'Produto não encontrado' });
-        }
-
-        // Deletar as imagens do sistema de arquivos (caso existam)
-        for (let i = 1; i <= 10; i++) {
-            const fotoKey = `foto0${i}`;
-            if (produto[fotoKey]) {
-                const fotoPath = path.join(__dirname, 'uploads', path.basename(produto[fotoKey]));
-                if (fs.existsSync(fotoPath)) {
-                    fs.unlinkSync(fotoPath);
-                }
-            }
-        }
-
-        // Deletar o produto do banco de dados
-        await prisma.produto.delete({
-            where: { id: parseInt(id) },
-        });
-
-        res.status(200).json({ message: 'Produto excluído com sucesso' });
+      await Produto.findByIdAndDelete(id);
+      res.status(200).json({ message: "Produto deletado com sucesso!" });
     } catch (error) {
-        console.error('Erro ao excluir produto:', error);
-        res.status(500).json({ error: 'Erro ao excluir produto' });
+      res.status(500).json({ message: "Erro ao deletar produto." });
     }
-});
+  });
+  
 
 // Iniciando o servidor
 app.listen(port, () => {

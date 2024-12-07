@@ -140,16 +140,19 @@ app.put('/produtos/:id', upload.fields([
 
 // Rota DELETE para excluir um produto
 app.delete('/produtos/:id', async (req, res) => {
-    const { id } = req.params;
     try {
-      const deletedProduct = await Produto.findByIdAndDelete(id);
-      if (!deletedProduct) {
-        return res.status(404).json({ message: "Produto não encontrado." });
+      const { id } = req.params;
+      console.log("Tentando deletar produto com ID:", id); // Depuração
+      const result = await Product.findByIdAndDelete(id);
+      if (!result) {
+        console.log("Produto não encontrado para o ID:", id); // Depuração
+        return res.status(404).json({ message: "Produto não encontrado" });
       }
-      res.status(200).json({ message: "Produto deletado com sucesso!" });
+      console.log("Produto deletado com sucesso:", result); // Depuração
+      return res.status(200).json({ message: "Produto deletado com sucesso!" });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Erro ao deletar produto" });
+      console.error("Erro ao deletar produto:", error); // Depuração
+      return res.status(500).json({ message: "Erro ao deletar produto" });
     }
   });
   

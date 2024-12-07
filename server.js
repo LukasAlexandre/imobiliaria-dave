@@ -139,7 +139,7 @@ app.put('/produtos/:id', upload.fields([
 });
 
 // Rota DELETE para excluir um produto
-app.delete('/produtos/:id', async (req, res) => {
+app.delete('/produtosdelete/:id', async (req, res) => {
     try {
         console.log('req.params:', req.params);
         const { id } = req.params;

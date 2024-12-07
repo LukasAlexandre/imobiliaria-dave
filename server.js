@@ -142,10 +142,14 @@ app.put('/produtos/:id', upload.fields([
 app.delete('/produtos/:id', async (req, res) => {
     const { id } = req.params;
     try {
-      await Produto.findByIdAndDelete(id);
+      const deletedProduct = await Produto.findByIdAndDelete(id);
+      if (!deletedProduct) {
+        return res.status(404).json({ message: "Produto não encontrado." });
+      }
       res.status(200).json({ message: "Produto deletado com sucesso!" });
     } catch (error) {
-      res.status(500).json({ message: "Erro ao deletar produto." });
+      console.error(error);
+      res.status(500).json({ message: "Erro ao deletar produto" });
     }
   });
   

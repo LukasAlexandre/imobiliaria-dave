@@ -52,6 +52,7 @@ app.post('/produtos', upload.fields([
     console.log('req.body:', req.body);
     console.log('req.files:', req.files);
 
+    // Cria o objeto com os dados básicos do produto
     const data = {
         descricao: req.body.descricao,
         quartos: parseInt(req.body.quartos),
@@ -60,16 +61,18 @@ app.post('/produtos', upload.fields([
         preco: parseFloat(req.body.preco),
     };
 
-    // Adicione as fotos se existirem
+    // Adiciona as URLs completas para as imagens, se existirem
+    const baseUrl = process.env.BASE_URL || `http://localhost:${port}`;
     for (let i = 1; i <= 10; i++) {
         if (req.files[`foto0${i}`] && req.files[`foto0${i}`].length > 0) {
-            data[`foto0${i}`] = req.files[`foto0${i}`][0].path;
+            data[`foto0${i}`] = `${baseUrl}/uploads/${req.files[`foto0${i}`][0].filename}`;
         }
     }
 
     console.log('Dados do produto:', data);
 
     try {
+        // Cria o produto no banco de dados
         const produto = await prisma.produto.create({ data });
         res.status(201).json(produto);
     } catch (error) {
@@ -77,6 +80,7 @@ app.post('/produtos', upload.fields([
         res.status(500).json({ error: 'Erro ao criar produto' });
     }
 });
+
 
 
 // Rota GET para listar todos os produtos

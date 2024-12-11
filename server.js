@@ -31,10 +31,11 @@ app.use((req, res, next) => {
     console.log('Body recebido:', req.body);
     next();
 });
-console.log(`Servidor rodando em ${getBaseUrl()}`);
+
 
 // Base URL para imagens
 const getBaseUrl = () => process.env.BASE_URL || `http://localhost:${port}`;
+console.log(`Servidor rodando em ${getBaseUrl()}`);
 
 // Rota POST para criar um produto
 app.post('/produtos', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name: `foto0${i + 1}` }))), async (req, res) => {

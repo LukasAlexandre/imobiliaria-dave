@@ -27,6 +27,11 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use((req, res, next) => {
+    console.log('Body recebido:', req.body);
+    next();
+});
+console.log(`Servidor rodando em ${getBaseUrl()}`);
 
 // Base URL para imagens
 const getBaseUrl = () => process.env.BASE_URL || `http://localhost:${port}`;

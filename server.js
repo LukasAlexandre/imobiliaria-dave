@@ -37,7 +37,7 @@ app.use((req, res, next) => {
 const getBaseUrl = () => process.env.BASE_URL || `http://localhost:${port}`;
 console.log(`Servidor rodando em ${getBaseUrl()}`);
 
-// Rota POST para criar um produto
+/// Rota POST para criar um produto
 app.post('/produtos', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name: `foto0${i + 1}` }))), async (req, res) => {
     const { descricao, quartos, banheiros, garagem, preco } = req.body;
     const data = {
@@ -48,10 +48,10 @@ app.post('/produtos', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name
         preco: parseFloat(preco),
     };
 
-    const baseUrl = getBaseUrl();
     for (let i = 1; i <= 10; i++) {
         if (req.files[`foto0${i}`] && req.files[`foto0${i}`].length > 0) {
-            data[`foto0${i}`] = `${baseUrl}/uploads/${req.files[`foto0${i}`][0].filename}`;
+            // Salvar apenas o caminho relativo no banco
+            data[`foto0${i}`] = `/uploads/${req.files[`foto0${i}`][0].filename}`;
         }
     }
 
@@ -69,15 +69,18 @@ app.get('/produtos', async (req, res) => {
     const baseUrl = getBaseUrl();
     try {
         const produtos = await prisma.produto.findMany();
+
         const produtosComImagens = produtos.map(produto => {
             for (let i = 1; i <= 10; i++) {
                 const fotoKey = `foto0${i}`;
-                if (produto[fotoKey]) {
-                    produto[fotoKey] = `${baseUrl}/${produto[fotoKey].replace(/\\/g, '/')}`;
+                if (produto[fotoKey] && !produto[fotoKey].startsWith('http')) {
+                    // Adicionar a URL base apenas se for um caminho relativo
+                    produto[fotoKey] = `${baseUrl}${produto[fotoKey]}`;
                 }
             }
             return produto;
         });
+
         res.json(produtosComImagens);
     } catch (error) {
         console.error('Erro ao buscar produtos:', error);

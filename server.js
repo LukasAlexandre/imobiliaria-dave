@@ -63,13 +63,12 @@ app.post('/produtos', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name
 });
 
 // Rota GET: Listar produtos
-// Rota GET: Listar produtos
 app.get('/produtos', async (req, res) => {
     const baseUrl = getBaseUrl();
     try {
         const produtos = await prisma.produto.findMany();
 
-        // Adiciona URLs completas às fotos, mantendo os outros campos intactos
+        // Ajusta os campos e adiciona URLs completas às fotos
         const produtosComImagens = produtos.map(produto => {
             for (let i = 1; i <= 10; i++) {
                 const fotoKey = `foto0${i}`;
@@ -77,7 +76,29 @@ app.get('/produtos', async (req, res) => {
                     produto[fotoKey] = `${baseUrl}${produto[fotoKey]}`;
                 }
             }
-            return produto;
+
+            // Retorna o produto completo
+            return {
+                id: produto.id,
+                titulo: produto.titulo, // Inclui o título
+                descricao: produto.descricao,
+                quartos: produto.quartos,
+                banheiros: produto.banheiros,
+                garagem: produto.garagem,
+                preco: produto.preco,
+                metragem: produto.metragem, // Inclui a metragem
+                localizacao: produto.localizacao, // Inclui a localização
+                foto01: produto.foto01 || null,
+                foto02: produto.foto02 || null,
+                foto03: produto.foto03 || null,
+                foto04: produto.foto04 || null,
+                foto05: produto.foto05 || null,
+                foto06: produto.foto06 || null,
+                foto07: produto.foto07 || null,
+                foto08: produto.foto08 || null,
+                foto09: produto.foto09 || null,
+                foto10: produto.foto10 || null,
+            };
         });
 
         res.json(produtosComImagens);

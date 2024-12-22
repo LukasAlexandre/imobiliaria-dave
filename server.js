@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import connectDB from './connectMongo.js';
 import dotenv from 'dotenv';
 import express from 'express';
 import multer from 'multer';
@@ -12,11 +11,10 @@ const app = express();
 const prisma = new PrismaClient();
 const port = process.env.PORT || 3000;
 dotenv.config();
-connectDB();
 
 // Middleware
-app.use(express.urlencoded({ extended: true })); // Para processar dados no formato x-www-form-urlencoded
-app.use(express.json()); // Para processar JSON
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(cors());
 
 // Configuração do multer
@@ -67,48 +65,22 @@ app.get('/produtos', async (req, res) => {
     const baseUrl = getBaseUrl();
     try {
         const produtos = await prisma.produto.findMany();
-
-        // Ajusta os campos e adiciona URLs completas às fotos
-        const produtosComImagens = produtos.map(produto => {
+        
+        produtos.forEach(produto => {
             for (let i = 1; i <= 10; i++) {
                 const fotoKey = `foto0${i}`;
                 if (produto[fotoKey]) {
                     produto[fotoKey] = `${baseUrl}${produto[fotoKey]}`;
                 }
             }
-
-            // Retorna o produto completo
-            return {
-                id: produto.id,
-                titulo: produto.titulo, // Inclui o título
-                descricao: produto.descricao,
-                quartos: produto.quartos,
-                banheiros: produto.banheiros,
-                garagem: produto.garagem,
-                preco: produto.preco,
-                metragem: produto.metragem, // Inclui a metragem
-                localizacao: produto.localizacao, // Inclui a localização
-                foto01: produto.foto01 || null,
-                foto02: produto.foto02 || null,
-                foto03: produto.foto03 || null,
-                foto04: produto.foto04 || null,
-                foto05: produto.foto05 || null,
-                foto06: produto.foto06 || null,
-                foto07: produto.foto07 || null,
-                foto08: produto.foto08 || null,
-                foto09: produto.foto09 || null,
-                foto10: produto.foto10 || null,
-            };
         });
 
-        res.json(produtosComImagens);
+        res.json(produtos);
     } catch (error) {
         console.error('Erro ao buscar produtos:', error);
         res.status(500).send('Erro ao buscar produtos');
     }
 });
-
-
 
 // Rota PUT: Atualizar produto
 app.put('/produtos/:id', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name: `foto0${i + 1}` }))), async (req, res) => {
@@ -134,7 +106,7 @@ app.put('/produtos/:id', upload.fields(Array.from({ length: 10 }, (_, i) => ({ n
 
     try {
         const updatedProduto = await prisma.produto.update({
-            where: { id: parseInt(id) },
+            where: { id },
             data,
         });
         res.status(200).json(updatedProduto);
@@ -148,7 +120,7 @@ app.put('/produtos/:id', upload.fields(Array.from({ length: 10 }, (_, i) => ({ n
 app.delete('/produtos/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const produto = await prisma.produto.delete({ where: { id: parseInt(id) } });
+        const produto = await prisma.produto.delete({ where: { id } });
         res.status(200).json(produto);
     } catch (error) {
         console.error('Erro ao deletar produto:', error);

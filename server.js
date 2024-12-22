@@ -61,26 +61,53 @@ app.post('/produtos', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name
 });
 
 // Rota GET: Listar produtos
+// Rota GET: Listar produtos
 app.get('/produtos', async (req, res) => {
     const baseUrl = getBaseUrl();
     try {
-        const produtos = await prisma.produto.findMany();
-        
-        produtos.forEach(produto => {
+        // Garante que todos os campos sejam buscados explicitamente
+        const produtos = await prisma.produto.findMany({
+            select: {
+                id: true,
+                titulo: true,
+                descricao: true,
+                quartos: true,
+                banheiros: true,
+                garagem: true,
+                preco: true,
+                metragem: true,
+                localizacao: true,
+                foto01: true,
+                foto02: true,
+                foto03: true,
+                foto04: true,
+                foto05: true,
+                foto06: true,
+                foto07: true,
+                foto08: true,
+                foto09: true,
+                foto10: true,
+            },
+        });
+
+        // Adiciona URLs completas para as imagens
+        const produtosComImagens = produtos.map(produto => {
             for (let i = 1; i <= 10; i++) {
                 const fotoKey = `foto0${i}`;
                 if (produto[fotoKey]) {
                     produto[fotoKey] = `${baseUrl}${produto[fotoKey]}`;
                 }
             }
+            return produto;
         });
 
-        res.json(produtos);
+        res.json(produtosComImagens);
     } catch (error) {
         console.error('Erro ao buscar produtos:', error);
         res.status(500).send('Erro ao buscar produtos');
     }
 });
+
 
 // Rota PUT: Atualizar produto
 app.put('/produtos/:id', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name: `foto0${i + 1}` }))), async (req, res) => {

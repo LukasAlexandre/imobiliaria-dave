@@ -105,6 +105,8 @@ app.get('/produtos', async (req, res) => {
     } catch (error) {
         console.error('Erro ao buscar produtos:', error.message);
         res.status(500).send('Erro ao buscar produtos');
+        console.error('Erro ao buscar produtos:', error);
+
     }
 });
 

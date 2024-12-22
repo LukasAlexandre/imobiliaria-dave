@@ -13,16 +13,6 @@ const prisma = new PrismaClient();
 const port = process.env.PORT || 3000;
 dotenv.config();
 connectDB();
-const data = {
-    titulo: titulo || null, // Certifique-se de enviar valores nulos para campos opcionais
-    descricao,
-    quartos: parseInt(quartos) || 0,
-    banheiros: parseInt(banheiros) || 0,
-    garagem: parseInt(garagem) || 0,
-    preco: parseFloat(preco) || 0.0,
-    metragem: parseFloat(metragem) || null,
-    localizacao: localizacao || null,
-};
 
 // Middleware
 app.use(express.urlencoded({ extended: true })); // Para processar dados no formato x-www-form-urlencoded
@@ -42,40 +32,35 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Helper para URL base
 const getBaseUrl = () => process.env.BASE_URL || `http://localhost:${port}`;
 
-// Configuração da rota POST: Criar produto
-// Rota POST atualizada para debug
+// Rota POST: Criar produto
 app.post('/produtos', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name: `foto0${i + 1}` }))), async (req, res) => {
     const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao } = req.body;
-  
+
     const data = {
-      titulo,
-      descricao,
-      quartos: parseInt(quartos),
-      banheiros: parseInt(banheiros),
-      garagem: parseInt(garagem),
-      preco: parseFloat(preco),
-      metragem: parseFloat(metragem),
-      localizacao,
+        titulo: titulo || null,
+        descricao: descricao || null,
+        quartos: parseInt(quartos) || 0,
+        banheiros: parseInt(banheiros) || 0,
+        garagem: parseInt(garagem) || 0,
+        preco: parseFloat(preco) || 0.0,
+        metragem: parseFloat(metragem) || null,
+        localizacao: localizacao || null,
     };
-  
-    // Log para verificar o objeto antes de salvar
-    console.log('Objeto enviado para o banco:', data);
-  
+
     for (let i = 1; i <= 10; i++) {
-      if (req.files[`foto0${i}`]?.length) {
-        data[`foto0${i}`] = `/uploads/${req.files[`foto0${i}`][0].filename}`;
-      }
+        if (req.files[`foto0${i}`]?.length) {
+            data[`foto0${i}`] = `/uploads/${req.files[`foto0${i}`][0].filename}`;
+        }
     }
-  
+
     try {
-      const produto = await prisma.produto.create({ data });
-      res.status(201).json(produto);
+        const produto = await prisma.produto.create({ data });
+        res.status(201).json(produto);
     } catch (error) {
-      console.error('Erro ao criar produto:', error);
-      res.status(500).json({ error: 'Erro ao criar produto' });
+        console.error('Erro ao criar produto:', error);
+        res.status(500).json({ error: 'Erro ao criar produto' });
     }
-  });
-  
+});
 
 // Rota GET: Listar produtos
 app.get('/produtos', async (req, res) => {
@@ -104,14 +89,14 @@ app.put('/produtos/:id', upload.fields(Array.from({ length: 10 }, (_, i) => ({ n
     const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao } = req.body;
 
     const data = {
-        titulo,
-        descricao,
-        quartos: parseInt(quartos),
-        banheiros: parseInt(banheiros),
-        garagem: parseInt(garagem),
-        preco: parseFloat(preco),
-        metragem: parseFloat(metragem),
-        localizacao,
+        titulo: titulo || null,
+        descricao: descricao || null,
+        quartos: parseInt(quartos) || 0,
+        banheiros: parseInt(banheiros) || 0,
+        garagem: parseInt(garagem) || 0,
+        preco: parseFloat(preco) || 0.0,
+        metragem: parseFloat(metragem) || null,
+        localizacao: localizacao || null,
     };
 
     for (let i = 1; i <= 10; i++) {
@@ -122,7 +107,7 @@ app.put('/produtos/:id', upload.fields(Array.from({ length: 10 }, (_, i) => ({ n
 
     try {
         const updatedProduto = await prisma.produto.update({
-            where: { id },
+            where: { id: parseInt(id) },
             data,
         });
         res.status(200).json(updatedProduto);
@@ -136,7 +121,7 @@ app.put('/produtos/:id', upload.fields(Array.from({ length: 10 }, (_, i) => ({ n
 app.delete('/produtos/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const produto = await prisma.produto.delete({ where: { id } });
+        const produto = await prisma.produto.delete({ where: { id: parseInt(id) } });
         res.status(200).json(produto);
     } catch (error) {
         console.error('Erro ao deletar produto:', error);

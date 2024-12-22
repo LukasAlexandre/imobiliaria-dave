@@ -10,8 +10,8 @@ datasource db {
 
 model Produto {
   id          String @id @default(auto()) @map("_id") @db.ObjectId
-  titulo      String? // Torna o campo opcional
-  descricao   String
+  titulo      String?
+  descricao   String?
   quartos     Int
   banheiros   Int
   garagem     Int
@@ -29,4 +29,3 @@ model Produto {
   foto09      String?
   foto10      String?
 }
-

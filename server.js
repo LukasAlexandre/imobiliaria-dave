@@ -77,16 +77,6 @@ app.get('/produtos', async (req, res) => {
                 preco: true,
                 metragem: true,
                 localizacao: true,
-                foto01: true,
-                foto02: true,
-                foto03: true,
-                foto04: true,
-                foto05: true,
-                foto06: true,
-                foto07: true,
-                foto08: true,
-                foto09: true,
-                foto10: true,
             },
         });
 

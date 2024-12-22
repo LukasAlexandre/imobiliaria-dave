@@ -63,18 +63,34 @@ app.post('/produtos', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name
 });
 
 // Rota GET: Listar produtos
+// Rota GET: Listar produtos
 app.get('/produtos', async (req, res) => {
     const baseUrl = getBaseUrl();
     try {
         const produtos = await prisma.produto.findMany();
         const produtosComImagens = produtos.map(produto => {
-            for (let i = 1; i <= 10; i++) {
-                const fotoKey = `foto0${i}`;
-                if (produto[fotoKey] && !produto[fotoKey].startsWith('http')) {
-                    produto[fotoKey] = `${baseUrl}${produto[fotoKey]}`;
-                }
-            }
-            return produto;
+            // Inclui os campos esperados no JSON
+            return {
+                id: produto.id,
+                titulo: produto.titulo || null,
+                descricao: produto.descricao || null,
+                quartos: produto.quartos || 0,
+                banheiros: produto.banheiros || 0,
+                garagem: produto.garagem || 0,
+                preco: produto.preco || 0.0,
+                metragem: produto.metragem || null,
+                localizacao: produto.localizacao || null,
+                foto01: produto.foto01 ? `${baseUrl}${produto.foto01}` : null,
+                foto02: produto.foto02 ? `${baseUrl}${produto.foto02}` : null,
+                foto03: produto.foto03 ? `${baseUrl}${produto.foto03}` : null,
+                foto04: produto.foto04 ? `${baseUrl}${produto.foto04}` : null,
+                foto05: produto.foto05 ? `${baseUrl}${produto.foto05}` : null,
+                foto06: produto.foto06 ? `${baseUrl}${produto.foto06}` : null,
+                foto07: produto.foto07 ? `${baseUrl}${produto.foto07}` : null,
+                foto08: produto.foto08 ? `${baseUrl}${produto.foto08}` : null,
+                foto09: produto.foto09 ? `${baseUrl}${produto.foto09}` : null,
+                foto10: produto.foto10 ? `${baseUrl}${produto.foto10}` : null,
+            };
         });
         res.json(produtosComImagens);
     } catch (error) {
@@ -82,6 +98,7 @@ app.get('/produtos', async (req, res) => {
         res.status(500).send('Erro ao buscar produtos');
     }
 });
+
 
 // Rota PUT: Atualizar produto
 app.put('/produtos/:id', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name: `foto0${i + 1}` }))), async (req, res) => {

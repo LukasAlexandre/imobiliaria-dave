@@ -7,18 +7,29 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
 
-// Variáveis e configurações iniciais
+// Configurações iniciais
 const app = express();
 const prisma = new PrismaClient();
 const port = process.env.PORT || 3000;
 dotenv.config();
 connectDB();
+const data = {
+    titulo: titulo || null, // Certifique-se de enviar valores nulos para campos opcionais
+    descricao,
+    quartos: parseInt(quartos) || 0,
+    banheiros: parseInt(banheiros) || 0,
+    garagem: parseInt(garagem) || 0,
+    preco: parseFloat(preco) || 0.0,
+    metragem: parseFloat(metragem) || null,
+    localizacao: localizacao || null,
+};
 
 // Middleware
-app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Para processar dados no formato x-www-form-urlencoded
+app.use(express.json()); // Para processar JSON
 app.use(cors());
 
-// Configuração de upload do multer
+// Configuração do multer
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const storage = multer.diskStorage({
@@ -27,60 +38,59 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use((req, res, next) => {
-    console.log('Body recebido:', req.body);
-    next();
-});
 
-
-// Base URL para imagens
+// Helper para URL base
 const getBaseUrl = () => process.env.BASE_URL || `http://localhost:${port}`;
-console.log(`Servidor rodando em ${getBaseUrl()}`);
 
-/// Rota POST para criar um produto
+// Configuração da rota POST: Criar produto
+// Rota POST atualizada para debug
 app.post('/produtos', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name: `foto0${i + 1}` }))), async (req, res) => {
-    const { descricao, quartos, banheiros, garagem, preco } = req.body;
+    const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao } = req.body;
+  
     const data = {
-        descricao,
-        quartos: parseInt(quartos),
-        banheiros: parseInt(banheiros),
-        garagem: parseInt(garagem),
-        preco: parseFloat(preco),
+      titulo,
+      descricao,
+      quartos: parseInt(quartos),
+      banheiros: parseInt(banheiros),
+      garagem: parseInt(garagem),
+      preco: parseFloat(preco),
+      metragem: parseFloat(metragem),
+      localizacao,
     };
-
+  
+    // Log para verificar o objeto antes de salvar
+    console.log('Objeto enviado para o banco:', data);
+  
     for (let i = 1; i <= 10; i++) {
-        if (req.files[`foto0${i}`] && req.files[`foto0${i}`].length > 0) {
-            // Salvar apenas o caminho relativo no banco
-            data[`foto0${i}`] = `/uploads/${req.files[`foto0${i}`][0].filename}`;
-        }
+      if (req.files[`foto0${i}`]?.length) {
+        data[`foto0${i}`] = `/uploads/${req.files[`foto0${i}`][0].filename}`;
+      }
     }
-
+  
     try {
-        const produto = await prisma.produto.create({ data });
-        res.status(201).json(produto);
+      const produto = await prisma.produto.create({ data });
+      res.status(201).json(produto);
     } catch (error) {
-        console.error('Erro ao criar produto:', error);
-        res.status(500).json({ error: 'Erro ao criar produto' });
+      console.error('Erro ao criar produto:', error);
+      res.status(500).json({ error: 'Erro ao criar produto' });
     }
-});
+  });
+  
 
-// Rota GET para listar todos os produtos
+// Rota GET: Listar produtos
 app.get('/produtos', async (req, res) => {
     const baseUrl = getBaseUrl();
     try {
         const produtos = await prisma.produto.findMany();
-
         const produtosComImagens = produtos.map(produto => {
             for (let i = 1; i <= 10; i++) {
                 const fotoKey = `foto0${i}`;
                 if (produto[fotoKey] && !produto[fotoKey].startsWith('http')) {
-                    // Adicionar a URL base apenas se for um caminho relativo
                     produto[fotoKey] = `${baseUrl}${produto[fotoKey]}`;
                 }
             }
             return produto;
         });
-
         res.json(produtosComImagens);
     } catch (error) {
         console.error('Erro ao buscar produtos:', error);
@@ -88,28 +98,31 @@ app.get('/produtos', async (req, res) => {
     }
 });
 
-// Rota PUT para atualizar um produto
+// Rota PUT: Atualizar produto
 app.put('/produtos/:id', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name: `foto0${i + 1}` }))), async (req, res) => {
     const { id } = req.params;
-    const { descricao, quartos, banheiros, garagem, preco } = req.body;
+    const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao } = req.body;
+
     const data = {
+        titulo,
         descricao,
         quartos: parseInt(quartos),
         banheiros: parseInt(banheiros),
         garagem: parseInt(garagem),
         preco: parseFloat(preco),
+        metragem: parseFloat(metragem),
+        localizacao,
     };
 
-    const baseUrl = getBaseUrl();
     for (let i = 1; i <= 10; i++) {
-        if (req.files[`foto0${i}`] && req.files[`foto0${i}`].length > 0) {
-            data[`foto0${i}`] = `${baseUrl}/uploads/${req.files[`foto0${i}`][0].filename}`;
+        if (req.files[`foto0${i}`]?.length) {
+            data[`foto0${i}`] = `/uploads/${req.files[`foto0${i}`][0].filename}`;
         }
     }
 
     try {
         const updatedProduto = await prisma.produto.update({
-            where: { id: parseInt(id) },
+            where: { id },
             data,
         });
         res.status(200).json(updatedProduto);
@@ -119,11 +132,11 @@ app.put('/produtos/:id', upload.fields(Array.from({ length: 10 }, (_, i) => ({ n
     }
 });
 
-// Rota DELETE para excluir um produto
+// Rota DELETE: Excluir produto
 app.delete('/produtos/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const produto = await prisma.produto.delete({ where: { id: parseInt(id) } });
+        const produto = await prisma.produto.delete({ where: { id } });
         res.status(200).json(produto);
     } catch (error) {
         console.error('Erro ao deletar produto:', error);

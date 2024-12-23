@@ -5,6 +5,7 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
+import fs from 'fs';
 
 // Configurações iniciais
 const app = express();
@@ -12,20 +13,28 @@ const prisma = new PrismaClient();
 const port = process.env.PORT || 3000;
 dotenv.config();
 
+// Resolve os caminhos de arquivos
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadDir = path.join(__dirname, 'uploads');
+
+// Garante que a pasta de uploads existe
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
+app.use('/uploads', express.static(uploadDir));
 
 // Configuração do multer
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'uploads/'),
+    destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
 });
 const upload = multer({ storage });
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Helper para URL base
 const getBaseUrl = () => process.env.BASE_URL || `http://localhost:${port}`;
@@ -64,7 +73,6 @@ app.post('/produtos', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name
 app.get('/produtos', async (req, res) => {
     const baseUrl = getBaseUrl();
     try {
-        // Certifique-se de buscar todos os campos do banco de dados, incluindo as fotos
         const produtos = await prisma.produto.findMany({
             select: {
                 id: true,
@@ -89,7 +97,6 @@ app.get('/produtos', async (req, res) => {
             },
         });
 
-        // Atualiza URLs de fotos se existirem
         const produtosComImagens = produtos.map(produto => {
             for (let i = 1; i <= 10; i++) {
                 const fotoKey = `foto0${i}`;
@@ -100,13 +107,10 @@ app.get('/produtos', async (req, res) => {
             return produto;
         });
 
-        // Envia a resposta com todos os campos do banco
         res.json(produtosComImagens);
     } catch (error) {
-        console.error('Erro ao buscar produtos:', error.message);
-        res.status(500).send('Erro ao buscar produtos');
         console.error('Erro ao buscar produtos:', error);
-
+        res.status(500).send('Erro ao buscar produtos');
     }
 });
 
@@ -134,7 +138,7 @@ app.put('/produtos/:id', upload.fields(Array.from({ length: 10 }, (_, i) => ({ n
 
     try {
         const updatedProduto = await prisma.produto.update({
-            where: { id },
+            where: { id: parseInt(id) },
             data,
         });
         res.status(200).json(updatedProduto);
@@ -148,7 +152,7 @@ app.put('/produtos/:id', upload.fields(Array.from({ length: 10 }, (_, i) => ({ n
 app.delete('/produtos/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const produto = await prisma.produto.delete({ where: { id } });
+        const produto = await prisma.produto.delete({ where: { id: parseInt(id) } });
         res.status(200).json(produto);
     } catch (error) {
         console.error('Erro ao deletar produto:', error);

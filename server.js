@@ -5,12 +5,17 @@ import multer from 'multer';
 import path from 'path';
 import { Storage } from '@google-cloud/storage';
 import cors from 'cors';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
 const app = express();
 const prisma = new PrismaClient();
 const port = process.env.PORT || 3000;
+
+// Configuração para simular __dirname em ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configuração do Google Cloud Storage
 const storage = new Storage({

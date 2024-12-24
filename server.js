@@ -41,6 +41,7 @@ const localUpload = multer({
       },
     }),
   });
+  console.log(`Salvando arquivo em: ${uploadPath}/${file.filename}`);
 
 // Endpoint para listar todos os produtos
 app.get('/produtos', async (req, res) => {

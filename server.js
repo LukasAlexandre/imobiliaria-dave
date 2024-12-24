@@ -7,11 +7,11 @@ import { fileURLToPath } from 'url';
 import cors from 'cors';
 import fs from 'fs';
 
-// Configurações iniciais
+dotenv.config();
+
 const app = express();
 const prisma = new PrismaClient();
 const port = process.env.PORT || 3000;
-dotenv.config();
 
 // Resolve os caminhos de arquivos
 const __filename = fileURLToPath(import.meta.url);
@@ -27,75 +27,61 @@ if (!fs.existsSync(uploadDir)) {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
-app.use('/uploads', express.static(uploadDir));
+app.use('/uploads', express.static(uploadDir)); // Serve os arquivos da pasta uploads
 
 // Configuração do multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+    filename: (req, file, cb) => {
+        const uniqueName = `${Date.now()}-${file.originalname}`;
+        cb(null, uniqueName);
+    },
 });
 const upload = multer({ storage });
 
-// Helper para URL base
+// Helper para construir URLs de arquivos
 const getBaseUrl = () => process.env.BASE_URL || `http://localhost:${port}`;
 
-// Rota POST: Criar produto
-app.post('/produtos', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name: `foto0${i + 1}` }))), async (req, res) => {
-    const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao } = req.body;
+// Rotas
+app.post(
+    '/produtos',
+    upload.fields(Array.from({ length: 10 }, (_, i) => ({ name: `foto0${i + 1}` }))),
+    async (req, res) => {
+        const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao } = req.body;
 
-    const data = {
-        titulo: titulo || null,
-        descricao: descricao || null,
-        quartos: parseInt(quartos) || 0,
-        banheiros: parseInt(banheiros) || 0,
-        garagem: parseInt(garagem) || 0,
-        preco: parseFloat(preco) || 0.0,
-        metragem: parseFloat(metragem) || null,
-        localizacao: localizacao || null,
-    };
+        const data = {
+            titulo: titulo || null,
+            descricao: descricao || null,
+            quartos: parseInt(quartos) || 0,
+            banheiros: parseInt(banheiros) || 0,
+            garagem: parseInt(garagem) || 0,
+            preco: parseFloat(preco) || 0.0,
+            metragem: parseFloat(metragem) || null,
+            localizacao: localizacao || null,
+        };
 
-    for (let i = 1; i <= 10; i++) {
-        if (req.files[`foto0${i}`]?.length) {
-            data[`foto0${i}`] = `/uploads/${req.files[`foto0${i}`][0].filename}`;
+        // Salva as URLs das imagens no banco de dados
+        for (let i = 1; i <= 10; i++) {
+            if (req.files[`foto0${i}`]?.length) {
+                data[`foto0${i}`] = `/uploads/${req.files[`foto0${i}`][0].filename}`;
+            }
+        }
+
+        try {
+            const produto = await prisma.produto.create({ data });
+            res.status(201).json(produto);
+        } catch (error) {
+            console.error('Erro ao criar produto:', error);
+            res.status(500).json({ error: 'Erro ao criar produto' });
         }
     }
+);
 
-    try {
-        const produto = await prisma.produto.create({ data });
-        res.status(201).json(produto);
-    } catch (error) {
-        console.error('Erro ao criar produto:', error);
-        res.status(500).json({ error: 'Erro ao criar produto' });
-    }
-});
-
-// Rota GET: Listar produtos
 app.get('/produtos', async (req, res) => {
     const baseUrl = getBaseUrl();
+
     try {
-        const produtos = await prisma.produto.findMany({
-            select: {
-                id: true,
-                titulo: true,
-                descricao: true,
-                quartos: true,
-                banheiros: true,
-                garagem: true,
-                preco: true,
-                metragem: true,
-                localizacao: true,
-                foto01: true,
-                foto02: true,
-                foto03: true,
-                foto04: true,
-                foto05: true,
-                foto06: true,
-                foto07: true,
-                foto08: true,
-                foto09: true,
-                foto10: true,
-            },
-        });
+        const produtos = await prisma.produto.findMany();
 
         const produtosComImagens = produtos.map(produto => {
             for (let i = 1; i <= 10; i++) {
@@ -114,53 +100,36 @@ app.get('/produtos', async (req, res) => {
     }
 });
 
-// Rota PUT: Atualizar produto
-app.put('/produtos/:id', upload.fields(Array.from({ length: 10 }, (_, i) => ({ name: `foto0${i + 1}` }))), async (req, res) => {
-    const { id } = req.params;
-    const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao } = req.body;
-
-    const data = {
-        titulo: titulo || null,
-        descricao: descricao || null,
-        quartos: parseInt(quartos) || 0,
-        banheiros: parseInt(banheiros) || 0,
-        garagem: parseInt(garagem) || 0,
-        preco: parseFloat(preco) || 0.0,
-        metragem: parseFloat(metragem) || null,
-        localizacao: localizacao || null,
-    };
-
-    for (let i = 1; i <= 10; i++) {
-        if (req.files[`foto0${i}`]?.length) {
-            data[`foto0${i}`] = `/uploads/${req.files[`foto0${i}`][0].filename}`;
-        }
-    }
-
-    try {
-        const updatedProduto = await prisma.produto.update({
-            where: { id: parseInt(id) },
-            data,
-        });
-        res.status(200).json(updatedProduto);
-    } catch (error) {
-        console.error('Erro ao atualizar produto:', error);
-        res.status(500).json({ error: 'Erro ao atualizar produto' });
-    }
-});
-
-// Rota DELETE: Excluir produto
+// Exclui produtos com imagens associadas
 app.delete('/produtos/:id', async (req, res) => {
     const { id } = req.params;
+
     try {
-        const produto = await prisma.produto.delete({ where: { id: parseInt(id) } });
-        res.status(200).json(produto);
+        const produto = await prisma.produto.findUnique({ where: { id: parseInt(id) } });
+        if (!produto) {
+            return res.status(404).json({ error: 'Produto não encontrado' });
+        }
+
+        // Remove arquivos de imagens associados
+        for (let i = 1; i <= 10; i++) {
+            const fotoKey = `foto0${i}`;
+            if (produto[fotoKey]) {
+                const filePath = path.join(__dirname, produto[fotoKey]);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            }
+        }
+
+        await prisma.produto.delete({ where: { id: parseInt(id) } });
+        res.status(200).json({ message: 'Produto excluído com sucesso' });
     } catch (error) {
-        console.error('Erro ao deletar produto:', error);
-        res.status(500).json({ error: 'Erro ao deletar produto' });
+        console.error('Erro ao excluir produto:', error);
+        res.status(500).json({ error: 'Erro ao excluir produto' });
     }
 });
 
-// Iniciando o servidor
+// Inicializa o servidor
 app.listen(port, () => {
     console.log(`Servidor rodando na porta ${port}`);
 });

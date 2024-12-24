@@ -21,7 +21,7 @@ const __dirname = path.dirname(__filename);
 const storage = new Storage({
   keyFilename: path.join(__dirname, 'config/seu-arquivo-credenciais.json'), // Caminho para o arquivo JSON
 });
-const bucketName = 'meu-bucket-imagens'; // Substitua pelo nome do seu bucket
+const bucketName = 'dave-bucket-imagens'; // Substitua pelo nome do seu bucket
 const bucket = storage.bucket(bucketName);
 
 // Middleware

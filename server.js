@@ -18,7 +18,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configuração da pasta local para upload no Render
-const uploadPath = path.join(__dirname, 'uploads');
+const uploadPath = '/var/data/uploads';
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
@@ -31,16 +31,16 @@ app.use('/uploads', express.static(uploadPath));
 
 // Configuração do multer para salvar arquivos localmente
 const localUpload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-      const uniqueName = `${Date.now()}-${file.originalname}`;
-      cb(null, uniqueName);
-    },
-  }),
-});
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => {
+        cb(null, uploadPath);
+      },
+      filename: (req, file, cb) => {
+        const uniqueName = `${Date.now()}-${file.originalname}`;
+        cb(null, uniqueName);
+      },
+    }),
+  });
 
 // Endpoint para listar todos os produtos
 app.get('/produtos', async (req, res) => {

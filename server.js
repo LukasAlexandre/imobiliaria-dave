@@ -49,17 +49,23 @@ app.post(
     async (req, res) => {
         const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
 
-    const data = {
-        titulo: titulo || null,
-        descricao: descricao || null,
-        quartos: parseInt(quartos) || 0,
-        banheiros: parseInt(banheiros) || 0,
-        garagem: parseInt(garagem) || 0,
-        preco: parseFloat(preco) || 0.0,
-        metragem: parseFloat(metragem) || null,
-        localizacao: localizacao || null,
-        tipo: tipo || null, // Inclui o campo "tipo"
-    };
+        // Validação do campo "tipo"
+        const validTypes = ["Apartamento", "Casa", "Terreno", "Imóvel Comercial"];
+        if (!validTypes.includes(tipo)) {
+            return res.status(400).json({ error: `Tipo inválido. Os valores permitidos são: ${validTypes.join(", ")}` });
+        }
+
+        const data = {
+            titulo: titulo || null,
+            descricao: descricao || null,
+            quartos: parseInt(quartos) || 0,
+            banheiros: parseInt(banheiros) || 0,
+            garagem: parseInt(garagem) || 0,
+            preco: parseFloat(preco) || 0.0,
+            metragem: parseFloat(metragem) || null,
+            localizacao: localizacao || null,
+            tipo: tipo || null,
+        };
 
         // Salva as URLs das imagens no banco de dados
         for (let i = 1; i <= 10; i++) {
@@ -71,12 +77,15 @@ app.post(
         try {
             const produto = await prisma.produto.create({ data });
             res.status(201).json(produto);
+            console.log('Arquivos recebidos:', req.files);
+
         } catch (error) {
             console.error('Erro ao criar produto:', error);
-            res.status(500).json({ error: 'Erro ao criar produto' });
+            res.status(500).json({ error: error.message || 'Erro ao criar produto' });
         }
     }
 );
+
 
 app.get('/produtos', async (req, res) => {
     const baseUrl = getBaseUrl();

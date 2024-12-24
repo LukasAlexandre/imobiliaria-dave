@@ -52,6 +52,17 @@ const uploadToGCS = (file) => {
   });
 };
 
+// Endpoint para listar todos os produtos
+app.get('/produtos', async (req, res) => {
+  try {
+    const produtos = await prisma.produto.findMany();
+    res.status(200).json(produtos);
+  } catch (error) {
+    console.error('Erro ao buscar produtos:', error);
+    res.status(500).json({ error: 'Erro ao buscar produtos.' });
+  }
+});
+
 // Endpoint para criar produtos com upload para o Google Cloud Storage
 app.post('/produtos', upload.array('fotos', 10), async (req, res) => {
   const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
@@ -81,6 +92,77 @@ app.post('/produtos', upload.array('fotos', 10), async (req, res) => {
   } catch (error) {
     console.error('Erro ao salvar produto:', error);
     res.status(500).json({ error: 'Erro ao salvar produto.' });
+  }
+});
+
+// Endpoint para editar um produto
+app.put('/produtos/:id', upload.array('fotos', 10), async (req, res) => {
+  const { id } = req.params;
+  const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
+
+  try {
+    const urls = [];
+    if (req.files.length > 0) {
+      for (const file of req.files) {
+        const url = await uploadToGCS(file);
+        urls.push(url);
+      }
+    }
+
+    const data = {
+      titulo,
+      descricao,
+      quartos: parseInt(quartos),
+      banheiros: parseInt(banheiros),
+      garagem: parseInt(garagem),
+      preco: parseFloat(preco),
+      metragem: parseFloat(metragem),
+      localizacao,
+      tipo,
+      fotos: urls.length > 0 ? urls : undefined, // Atualiza apenas se houver novas fotos
+    };
+
+    const produto = await prisma.produto.update({
+      where: { id: parseInt(id) },
+      data,
+    });
+
+    res.status(200).json(produto);
+  } catch (error) {
+    console.error('Erro ao editar produto:', error);
+    res.status(500).json({ error: 'Erro ao editar produto.' });
+  }
+});
+
+// Endpoint para deletar um produto
+app.delete('/produtos/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const produto = await prisma.produto.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!produto) {
+      return res.status(404).json({ error: 'Produto não encontrado.' });
+    }
+
+    // Deletar as fotos associadas no Google Cloud Storage
+    if (produto.fotos) {
+      for (const fotoUrl of produto.fotos) {
+        const fileName = fotoUrl.split('/').pop();
+        await bucket.file(fileName).delete();
+      }
+    }
+
+    await prisma.produto.delete({
+      where: { id: parseInt(id) },
+    });
+
+    res.status(200).json({ message: 'Produto deletado com sucesso!' });
+  } catch (error) {
+    console.error('Erro ao deletar produto:', error);
+    res.status(500).json({ error: 'Erro ao deletar produto.' });
   }
 });
 

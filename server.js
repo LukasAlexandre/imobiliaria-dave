@@ -19,7 +19,7 @@ const __dirname = path.dirname(__filename);
 
 // Configuração do Google Cloud Storage
 const storage = new Storage({
-  keyFilename: path.join(__dirname, 'config/seu-arquivo-credenciais.json'), // Caminho para o arquivo JSON
+  keyFilename: path.join(__dirname, './config/node-project-dave-ac102d9d064e.json'), // Caminho para o arquivo JSON
 });
 const bucketName = 'dave-bucket-imagens'; // Substitua pelo nome do seu bucket
 const bucket = storage.bucket(bucketName);

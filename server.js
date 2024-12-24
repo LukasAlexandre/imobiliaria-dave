@@ -100,6 +100,11 @@ app.get('/produtos', async (req, res) => {
         res.status(500).send('Erro ao buscar produtos');
     }
 });
+const validTypes = ["Apartamento", "Casa", "Terreno", "Imóvel Comercial"];
+
+if (!validTypes.includes(tipo)) {
+    return res.status(400).json({ error: `Tipo inválido. Os valores permitidos são: ${validTypes.join(", ")}` });
+}
 
 // Exclui produtos com imagens associadas
 app.delete('/produtos/:id', async (req, res) => {

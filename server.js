@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { Storage } from '@google-cloud/storage';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
@@ -24,82 +25,100 @@ const storage = new Storage({
 const bucketName = 'dave-bucket-imagens'; // Substitua pelo nome do seu bucket
 const bucket = storage.bucket(bucketName);
 
+// Configuração da pasta local para upload no Render
+const uploadPath = '/var/data/uploads';
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
-// Configuração do multer
-const upload = multer({ storage: multer.memoryStorage() }); // Armazena arquivos na memória temporária
+// Configuração do multer para salvar arquivos localmente
+const localUpload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      const uniqueName = `${Date.now()}-${file.originalname}`;
+      cb(null, uniqueName);
+    },
+  }),
+});
 
 // Função para fazer upload para o Google Cloud Storage
-const uploadToGCS = (file) => {
+const uploadToGCS = (filePath, fileName) => {
   return new Promise((resolve, reject) => {
-    const blob = bucket.file(file.originalname);
+    const blob = bucket.file(fileName);
     const blobStream = blob.createWriteStream({
       resumable: false,
     });
 
     blobStream
       .on('finish', () => {
-        const publicUrl = `https://storage.googleapis.com/${bucketName}/${blob.name}`;
+        const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
         resolve(publicUrl);
       })
       .on('error', (err) => {
         reject(err);
-      })
-      .end(file.buffer);
+      });
+
+    fs.createReadStream(filePath).pipe(blobStream);
   });
 };
 
 // Endpoint para listar todos os produtos
-app.get('/produtos1', async (req, res) => {
-    try {
-      const produtos = await prisma.produto.findMany();
-      res.status(200).json(produtos);
-    } catch (error) {
-      console.error('Erro ao buscar produtos:', error);
-      res.status(500).json({ error: 'Erro ao buscar produtos.' });
-    }
-  });
-  
-  
+app.get('/produtos', async (req, res) => {
+  try {
+    const produtos = await prisma.produto.findMany();
+    res.status(200).json(produtos);
+  } catch (error) {
+    console.error('Erro ao buscar produtos:', error);
+    res.status(500).json({ error: 'Erro ao buscar produtos.' });
+  }
+});
 
-// Endpoint para criar produtos com upload para o Google Cloud Storage
-app.post('/produtos1', upload.array('fotos', 10), async (req, res) => {
-    const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
-  
-    try {
-      const urls = [];
-      for (const file of req.files) {
-        const url = await uploadToGCS(file);
-        urls.push(url);
-      }
-  
-      const data = {
-        titulo,
-        descricao,
-        quartos: parseInt(quartos),
-        banheiros: parseInt(banheiros),
-        garagem: parseInt(garagem),
-        preco: parseFloat(preco),
-        metragem: parseFloat(metragem),
-        localizacao,
-        tipo,
-        fotos: urls, // Array de URLs das fotos
-      };
-      
-      const produto = await prisma.produto.create({ data });
-      res.status(201).json(produto);
-    } catch (error) {
-      console.error('Erro no backend:', error.message, error.stack);
-      res.status(500).json({ error: error.message });
+// Endpoint para criar produtos com upload local e para o Google Cloud Storage
+app.post('/produtos', localUpload.array('fotos', 10), async (req, res) => {
+  const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
+
+  try {
+    const urls = [];
+    for (const file of req.files) {
+      const filePath = path.join(uploadPath, file.filename);
+      const url = await uploadToGCS(filePath, file.filename);
+      urls.push(url);
+
+      // Remover o arquivo local após o upload para o GCS
+      fs.unlinkSync(filePath);
     }
-  });
-  
+
+    const data = {
+      titulo,
+      descricao,
+      quartos: parseInt(quartos),
+      banheiros: parseInt(banheiros),
+      garagem: parseInt(garagem),
+      preco: parseFloat(preco),
+      metragem: parseFloat(metragem),
+      localizacao,
+      tipo,
+      fotos: urls, // Array de URLs das fotos
+    };
+
+    const produto = await prisma.produto.create({ data });
+    res.status(201).json(produto);
+  } catch (error) {
+    console.error('Erro no backend:', error.message, error.stack);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Endpoint para editar um produto
-app.put('/produtos1/:id', upload.array('fotos', 10), async (req, res) => {
+app.put('/produtos/:id', localUpload.array('fotos', 10), async (req, res) => {
   const { id } = req.params;
   const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
 
@@ -107,8 +126,12 @@ app.put('/produtos1/:id', upload.array('fotos', 10), async (req, res) => {
     const urls = [];
     if (req.files.length > 0) {
       for (const file of req.files) {
-        const url = await uploadToGCS(file);
+        const filePath = path.join(uploadPath, file.filename);
+        const url = await uploadToGCS(filePath, file.filename);
         urls.push(url);
+
+        // Remover o arquivo local após o upload para o GCS
+        fs.unlinkSync(filePath);
       }
     }
 
@@ -138,7 +161,7 @@ app.put('/produtos1/:id', upload.array('fotos', 10), async (req, res) => {
 });
 
 // Endpoint para deletar um produto
-app.delete('/produtos1/:id', async (req, res) => {
+app.delete('/produtos/:id', async (req, res) => {
   const { id } = req.params;
 
   try {

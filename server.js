@@ -70,13 +70,14 @@ app.post('/produtos', upload.array('fotos', 10), async (req, res) => {
     try {
       console.log("Recebendo dados:", req.body);
   
+      // Verifique e processe os arquivos enviados
       const urls = [];
       for (const file of req.files) {
-        console.log("Arquivo recebido:", file.originalname);
-        const url = await uploadToGCS(file);
+        const url = await uploadToGCS(file); // Faz o upload para o GCS e retorna a URL pública
         urls.push(url);
       }
   
+      // Crie o produto no banco de dados
       const data = {
         titulo,
         descricao,
@@ -87,7 +88,7 @@ app.post('/produtos', upload.array('fotos', 10), async (req, res) => {
         metragem: parseFloat(metragem),
         localizacao,
         tipo,
-        fotos: urls,
+        fotos: urls, // Salve todas as URLs no array de strings
       };
   
       console.log("Salvando no banco de dados:", data);

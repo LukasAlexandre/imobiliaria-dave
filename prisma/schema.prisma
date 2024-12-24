@@ -9,24 +9,15 @@ datasource db {
 }
 
 model Produto {
-    id          String   @id @default(auto()) @map("_id") @db.ObjectId
-    titulo      String?
-    descricao   String?
-    quartos     Int
-    banheiros   Int
-    garagem     Int
-    preco       Float
-    metragem    Float?
-    localizacao String?
-    tipo        String?  // Nova categoria adicionada
-    foto01      String?
-    foto02      String?
-    foto03      String?
-    foto04      String?
-    foto05      String?
-    foto06      String?
-    foto07      String?
-    foto08      String?
-    foto09      String?
-    foto10      String?
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  titulo      String
+  descricao   String
+  quartos     Int
+  banheiros   Int
+  garagem     Int
+  preco       Float
+  metragem    Float
+  localizacao String
+  tipo        String
+  fotos       String[] // Array de strings para armazenar URLs das fotos
 }

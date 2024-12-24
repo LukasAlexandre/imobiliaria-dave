@@ -82,15 +82,28 @@ app.get('/produtos', async (req, res) => {
 });
 
 // Endpoint para criar produtos com upload local e para o Google Cloud Storage
-app.post('/produtos', localUpload.array('fotos', 10), async (req, res) => {
+app.post('/produtos', localUpload.fields([
+  { name: 'foto01', maxCount: 1 },
+  { name: 'foto02', maxCount: 1 },
+  { name: 'foto03', maxCount: 1 },
+  { name: 'foto04', maxCount: 1 },
+  { name: 'foto05', maxCount: 1 },
+  { name: 'foto06', maxCount: 1 },
+  { name: 'foto07', maxCount: 1 },
+  { name: 'foto08', maxCount: 1 },
+  { name: 'foto09', maxCount: 1 },
+  { name: 'foto10', maxCount: 1 },
+]), async (req, res) => {
   const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
 
   try {
-    const urls = [];
-    for (const file of req.files) {
+    const urls = {};
+
+    for (const fieldName in req.files) {
+      const file = req.files[fieldName][0];
       const filePath = path.join(uploadPath, file.filename);
       const url = await uploadToGCS(filePath, file.filename);
-      urls.push(url);
+      urls[fieldName] = url;
 
       // Remover o arquivo local após o upload para o GCS
       fs.unlinkSync(filePath);
@@ -106,7 +119,7 @@ app.post('/produtos', localUpload.array('fotos', 10), async (req, res) => {
       metragem: parseFloat(metragem),
       localizacao,
       tipo,
-      fotos: urls, // Array de URLs das fotos
+      ...urls, // Inclui foto01, foto02, ..., foto10
     };
 
     const produto = await prisma.produto.create({ data });
@@ -118,21 +131,32 @@ app.post('/produtos', localUpload.array('fotos', 10), async (req, res) => {
 });
 
 // Endpoint para editar um produto
-app.put('/produtos/:id', localUpload.array('fotos', 10), async (req, res) => {
+app.put('/produtos/:id', localUpload.fields([
+  { name: 'foto01', maxCount: 1 },
+  { name: 'foto02', maxCount: 1 },
+  { name: 'foto03', maxCount: 1 },
+  { name: 'foto04', maxCount: 1 },
+  { name: 'foto05', maxCount: 1 },
+  { name: 'foto06', maxCount: 1 },
+  { name: 'foto07', maxCount: 1 },
+  { name: 'foto08', maxCount: 1 },
+  { name: 'foto09', maxCount: 1 },
+  { name: 'foto10', maxCount: 1 },
+]), async (req, res) => {
   const { id } = req.params;
   const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
 
   try {
-    const urls = [];
-    if (req.files.length > 0) {
-      for (const file of req.files) {
-        const filePath = path.join(uploadPath, file.filename);
-        const url = await uploadToGCS(filePath, file.filename);
-        urls.push(url);
+    const urls = {};
 
-        // Remover o arquivo local após o upload para o GCS
-        fs.unlinkSync(filePath);
-      }
+    for (const fieldName in req.files) {
+      const file = req.files[fieldName][0];
+      const filePath = path.join(uploadPath, file.filename);
+      const url = await uploadToGCS(filePath, file.filename);
+      urls[fieldName] = url;
+
+      // Remover o arquivo local após o upload para o GCS
+      fs.unlinkSync(filePath);
     }
 
     const data = {
@@ -145,11 +169,11 @@ app.put('/produtos/:id', localUpload.array('fotos', 10), async (req, res) => {
       metragem: parseFloat(metragem),
       localizacao,
       tipo,
-      fotos: urls.length > 0 ? urls : undefined, // Atualiza apenas se houver novas fotos
+      ...urls, // Atualiza fotos apenas se houver novas
     };
 
     const produto = await prisma.produto.update({
-      where: { id: parseInt(id) },
+      where: { id },
       data,
     });
 
@@ -166,7 +190,7 @@ app.delete('/produtos/:id', async (req, res) => {
 
   try {
     const produto = await prisma.produto.findUnique({
-      where: { id: parseInt(id) },
+      where: { id },
     });
 
     if (!produto) {
@@ -174,15 +198,16 @@ app.delete('/produtos/:id', async (req, res) => {
     }
 
     // Deletar as fotos associadas no Google Cloud Storage
-    if (produto.fotos) {
-      for (const fotoUrl of produto.fotos) {
-        const fileName = fotoUrl.split('/').pop();
+    for (let i = 1; i <= 10; i++) {
+      const fotoKey = `foto0${i}`;
+      if (produto[fotoKey]) {
+        const fileName = produto[fotoKey].split('/').pop();
         await bucket.file(fileName).delete();
       }
     }
 
     await prisma.produto.delete({
-      where: { id: parseInt(id) },
+      where: { id },
     });
 
     res.status(200).json({ message: 'Produto deletado com sucesso!' });

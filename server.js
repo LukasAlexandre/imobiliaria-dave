@@ -63,6 +63,7 @@ app.get('/produtos1', async (req, res) => {
     }
   });
   
+  
 
 // Endpoint para criar produtos com upload para o Google Cloud Storage
 app.post('/produtos1', upload.array('fotos', 10), async (req, res) => {

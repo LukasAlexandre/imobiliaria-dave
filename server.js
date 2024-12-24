@@ -68,16 +68,12 @@ app.post('/produtos', upload.array('fotos', 10), async (req, res) => {
     const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
   
     try {
-      console.log("Recebendo dados:", req.body);
-  
-      // Verifique e processe os arquivos enviados
       const urls = [];
       for (const file of req.files) {
-        const url = await uploadToGCS(file); // Faz o upload para o GCS e retorna a URL pública
+        const url = await uploadToGCS(file);
         urls.push(url);
       }
   
-      // Crie o produto no banco de dados
       const data = {
         titulo,
         descricao,
@@ -88,10 +84,9 @@ app.post('/produtos', upload.array('fotos', 10), async (req, res) => {
         metragem: parseFloat(metragem),
         localizacao,
         tipo,
-        fotos: urls, // Salve todas as URLs no array de strings
+        fotos: urls, // Array de URLs das fotos
       };
   
-      console.log("Salvando no banco de dados:", data);
       const produto = await prisma.produto.create({ data });
       res.status(201).json(produto);
     } catch (error) {

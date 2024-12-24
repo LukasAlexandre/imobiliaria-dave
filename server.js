@@ -47,18 +47,19 @@ app.post(
     '/produtos',
     upload.fields(Array.from({ length: 10 }, (_, i) => ({ name: `foto0${i + 1}` }))),
     async (req, res) => {
-        const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao } = req.body;
+        const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
 
-        const data = {
-            titulo: titulo || null,
-            descricao: descricao || null,
-            quartos: parseInt(quartos) || 0,
-            banheiros: parseInt(banheiros) || 0,
-            garagem: parseInt(garagem) || 0,
-            preco: parseFloat(preco) || 0.0,
-            metragem: parseFloat(metragem) || null,
-            localizacao: localizacao || null,
-        };
+    const data = {
+        titulo: titulo || null,
+        descricao: descricao || null,
+        quartos: parseInt(quartos) || 0,
+        banheiros: parseInt(banheiros) || 0,
+        garagem: parseInt(garagem) || 0,
+        preco: parseFloat(preco) || 0.0,
+        metragem: parseFloat(metragem) || null,
+        localizacao: localizacao || null,
+        tipo: tipo || null, // Inclui o campo "tipo"
+    };
 
         // Salva as URLs das imagens no banco de dados
         for (let i = 1; i <= 10; i++) {

@@ -18,6 +18,7 @@ model Produto {
     preco       Float
     metragem    Float?
     localizacao String?
+    tipo        String?  // Nova categoria adicionada
     foto01      String?
     foto02      String?
     foto03      String?

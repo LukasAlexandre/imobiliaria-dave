@@ -53,7 +53,7 @@ const uploadToGCS = (file) => {
 };
 
 // Endpoint para listar todos os produtos
-app.get('/produtos', async (req, res) => {
+app.get('/produtos1', async (req, res) => {
     try {
       const produtos = await prisma.produto.findMany();
       res.status(200).json(produtos);
@@ -65,7 +65,7 @@ app.get('/produtos', async (req, res) => {
   
 
 // Endpoint para criar produtos com upload para o Google Cloud Storage
-app.post('/produtos', upload.array('fotos', 10), async (req, res) => {
+app.post('/produtos1', upload.array('fotos', 10), async (req, res) => {
     const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
   
     try {
@@ -98,7 +98,7 @@ app.post('/produtos', upload.array('fotos', 10), async (req, res) => {
   
 
 // Endpoint para editar um produto
-app.put('/produtos/:id', upload.array('fotos', 10), async (req, res) => {
+app.put('/produtos1/:id', upload.array('fotos', 10), async (req, res) => {
   const { id } = req.params;
   const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
 
@@ -137,7 +137,7 @@ app.put('/produtos/:id', upload.array('fotos', 10), async (req, res) => {
 });
 
 // Endpoint para deletar um produto
-app.delete('/produtos/:id', async (req, res) => {
+app.delete('/produtos1/:id', async (req, res) => {
   const { id } = req.params;
 
   try {

@@ -54,14 +54,15 @@ const uploadToGCS = (file) => {
 
 // Endpoint para listar todos os produtos
 app.get('/produtos', async (req, res) => {
-  try {
-    const produtos = await prisma.produto.findMany();
-    res.status(200).json(produtos);
-  } catch (error) {
-    console.error('Erro ao buscar produtos:', error);
-    res.status(500).json({ error: 'Erro ao buscar produtos.' });
-  }
-});
+    try {
+      const produtos = await prisma.produto.findMany();
+      res.status(200).json(produtos);
+    } catch (error) {
+      console.error('Erro ao buscar produtos:', error);
+      res.status(500).json({ error: 'Erro ao buscar produtos.' });
+    }
+  });
+  
 
 // Endpoint para criar produtos com upload para o Google Cloud Storage
 app.post('/produtos', upload.array('fotos', 10), async (req, res) => {

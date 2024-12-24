@@ -31,17 +31,16 @@ app.use('/uploads', express.static(uploadPath));
 
 // Configuração do multer para salvar arquivos localmente
 const localUpload = multer({
-    storage: multer.diskStorage({
-      destination: (req, file, cb) => {
-        cb(null, uploadPath);
-      },
-      filename: (req, file, cb) => {
-        const uniqueName = `${Date.now()}-${file.originalname}`;
-        cb(null, uniqueName);
-      },
-    }),
-  });
-  console.log(`Salvando arquivo em: ${uploadPath}/${file.filename}`);
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      const uniqueName = `${Date.now()}-${file.originalname}`;
+      cb(null, uniqueName);
+    },
+  }),
+});
 
 // Endpoint para listar todos os produtos
 app.get('/produtos', async (req, res) => {
@@ -55,99 +54,129 @@ app.get('/produtos', async (req, res) => {
 });
 
 // Endpoint para criar produtos com upload local
-app.post('/produtos', localUpload.fields([
-  { name: 'foto01', maxCount: 1 },
-  { name: 'foto02', maxCount: 1 },
-  { name: 'foto03', maxCount: 1 },
-  { name: 'foto04', maxCount: 1 },
-  { name: 'foto05', maxCount: 1 },
-  { name: 'foto06', maxCount: 1 },
-  { name: 'foto07', maxCount: 1 },
-  { name: 'foto08', maxCount: 1 },
-  { name: 'foto09', maxCount: 1 },
-  { name: 'foto10', maxCount: 1 },
-]), async (req, res) => {
-  const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
-
-  try {
-    const urls = {};
-
-    for (const fieldName in req.files) {
-      const file = req.files[fieldName][0];
-      const url = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
-      urls[fieldName] = url;
-    }
-
-    const data = {
+app.post(
+  '/produtos',
+  localUpload.fields([
+    { name: 'foto01', maxCount: 1 },
+    { name: 'foto02', maxCount: 1 },
+    { name: 'foto03', maxCount: 1 },
+    { name: 'foto04', maxCount: 1 },
+    { name: 'foto05', maxCount: 1 },
+    { name: 'foto06', maxCount: 1 },
+    { name: 'foto07', maxCount: 1 },
+    { name: 'foto08', maxCount: 1 },
+    { name: 'foto09', maxCount: 1 },
+    { name: 'foto10', maxCount: 1 },
+  ]),
+  async (req, res) => {
+    const {
       titulo,
       descricao,
-      quartos: parseInt(quartos),
-      banheiros: parseInt(banheiros),
-      garagem: parseInt(garagem),
-      preco: parseFloat(preco),
-      metragem: parseFloat(metragem),
+      quartos,
+      banheiros,
+      garagem,
+      preco,
+      metragem,
       localizacao,
       tipo,
-      ...urls, // Inclui foto01, foto02, ..., foto10
-    };
+    } = req.body;
 
-    const produto = await prisma.produto.create({ data });
-    res.status(201).json(produto);
-  } catch (error) {
-    console.error('Erro no backend:', error.message, error.stack);
-    res.status(500).json({ error: error.message });
+    try {
+      const urls = {};
+
+      for (const fieldName in req.files) {
+        const file = req.files[fieldName][0];
+        const url = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+        urls[fieldName] = url;
+        console.log(`Salvando arquivo em: ${uploadPath}/${file.filename}`);
+      }
+
+      const data = {
+        titulo,
+        descricao,
+        quartos: parseInt(quartos),
+        banheiros: parseInt(banheiros),
+        garagem: parseInt(garagem),
+        preco: parseFloat(preco),
+        metragem: parseFloat(metragem),
+        localizacao,
+        tipo,
+        ...urls, // Inclui foto01, foto02, ..., foto10
+      };
+
+      const produto = await prisma.produto.create({ data });
+      res.status(201).json(produto);
+    } catch (error) {
+      console.error('Erro no backend:', error.message, error.stack);
+      res.status(500).json({ error: error.message });
+    }
   }
-});
+);
 
 // Endpoint para editar um produto
-app.put('/produtos/:id', localUpload.fields([
-  { name: 'foto01', maxCount: 1 },
-  { name: 'foto02', maxCount: 1 },
-  { name: 'foto03', maxCount: 1 },
-  { name: 'foto04', maxCount: 1 },
-  { name: 'foto05', maxCount: 1 },
-  { name: 'foto06', maxCount: 1 },
-  { name: 'foto07', maxCount: 1 },
-  { name: 'foto08', maxCount: 1 },
-  { name: 'foto09', maxCount: 1 },
-  { name: 'foto10', maxCount: 1 },
-]), async (req, res) => {
-  const { id } = req.params;
-  const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
-
-  try {
-    const urls = {};
-
-    for (const fieldName in req.files) {
-      const file = req.files[fieldName][0];
-      const url = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
-      urls[fieldName] = url;
-    }
-
-    const data = {
+app.put(
+  '/produtos/:id',
+  localUpload.fields([
+    { name: 'foto01', maxCount: 1 },
+    { name: 'foto02', maxCount: 1 },
+    { name: 'foto03', maxCount: 1 },
+    { name: 'foto04', maxCount: 1 },
+    { name: 'foto05', maxCount: 1 },
+    { name: 'foto06', maxCount: 1 },
+    { name: 'foto07', maxCount: 1 },
+    { name: 'foto08', maxCount: 1 },
+    { name: 'foto09', maxCount: 1 },
+    { name: 'foto10', maxCount: 1 },
+  ]),
+  async (req, res) => {
+    const { id } = req.params;
+    const {
       titulo,
       descricao,
-      quartos: parseInt(quartos),
-      banheiros: parseInt(banheiros),
-      garagem: parseInt(garagem),
-      preco: parseFloat(preco),
-      metragem: parseFloat(metragem),
+      quartos,
+      banheiros,
+      garagem,
+      preco,
+      metragem,
       localizacao,
       tipo,
-      ...urls, // Atualiza fotos apenas se houver novas
-    };
+    } = req.body;
 
-    const produto = await prisma.produto.update({
-      where: { id },
-      data,
-    });
+    try {
+      const urls = {};
 
-    res.status(200).json(produto);
-  } catch (error) {
-    console.error('Erro ao editar produto:', error);
-    res.status(500).json({ error: 'Erro ao editar produto.' });
+      for (const fieldName in req.files) {
+        const file = req.files[fieldName][0];
+        const url = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+        urls[fieldName] = url;
+        console.log(`Atualizando arquivo em: ${uploadPath}/${file.filename}`);
+      }
+
+      const data = {
+        titulo,
+        descricao,
+        quartos: parseInt(quartos),
+        banheiros: parseInt(banheiros),
+        garagem: parseInt(garagem),
+        preco: parseFloat(preco),
+        metragem: parseFloat(metragem),
+        localizacao,
+        tipo,
+        ...urls, // Atualiza fotos apenas se houver novas
+      };
+
+      const produto = await prisma.produto.update({
+        where: { id },
+        data,
+      });
+
+      res.status(200).json(produto);
+    } catch (error) {
+      console.error('Erro ao editar produto:', error);
+      res.status(500).json({ error: 'Erro ao editar produto.' });
+    }
   }
-});
+);
 
 // Endpoint para deletar um produto
 app.delete('/produtos/:id', async (req, res) => {

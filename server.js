@@ -4,7 +4,6 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { Storage } from '@google-cloud/storage';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
 
@@ -18,15 +17,8 @@ const port = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configuração do Google Cloud Storage
-const storage = new Storage({
-  keyFilename: path.join(__dirname, './config/node-project-dave-ac102d9d064e.json'), // Caminho para o arquivo JSON
-});
-const bucketName = 'dave-bucket-imagens'; // Substitua pelo nome do seu bucket
-const bucket = storage.bucket(bucketName);
-
 // Configuração da pasta local para upload no Render
-const uploadPath = '/var/data/uploads';
+const uploadPath = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
@@ -35,6 +27,7 @@ if (!fs.existsSync(uploadPath)) {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
+app.use('/uploads', express.static(uploadPath));
 
 // Configuração do multer para salvar arquivos localmente
 const localUpload = multer({
@@ -49,27 +42,6 @@ const localUpload = multer({
   }),
 });
 
-// Função para fazer upload para o Google Cloud Storage
-const uploadToGCS = (filePath, fileName) => {
-  return new Promise((resolve, reject) => {
-    const blob = bucket.file(fileName);
-    const blobStream = blob.createWriteStream({
-      resumable: false,
-    });
-
-    blobStream
-      .on('finish', () => {
-        const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
-        resolve(publicUrl);
-      })
-      .on('error', (err) => {
-        reject(err);
-      });
-
-    fs.createReadStream(filePath).pipe(blobStream);
-  });
-};
-
 // Endpoint para listar todos os produtos
 app.get('/produtos', async (req, res) => {
   try {
@@ -81,7 +53,7 @@ app.get('/produtos', async (req, res) => {
   }
 });
 
-// Endpoint para criar produtos com upload local e para o Google Cloud Storage
+// Endpoint para criar produtos com upload local
 app.post('/produtos', localUpload.fields([
   { name: 'foto01', maxCount: 1 },
   { name: 'foto02', maxCount: 1 },
@@ -101,12 +73,8 @@ app.post('/produtos', localUpload.fields([
 
     for (const fieldName in req.files) {
       const file = req.files[fieldName][0];
-      const filePath = path.join(uploadPath, file.filename);
-      const url = await uploadToGCS(filePath, file.filename);
+      const url = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
       urls[fieldName] = url;
-
-      // Remover o arquivo local após o upload para o GCS
-      fs.unlinkSync(filePath);
     }
 
     const data = {
@@ -151,12 +119,8 @@ app.put('/produtos/:id', localUpload.fields([
 
     for (const fieldName in req.files) {
       const file = req.files[fieldName][0];
-      const filePath = path.join(uploadPath, file.filename);
-      const url = await uploadToGCS(filePath, file.filename);
+      const url = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
       urls[fieldName] = url;
-
-      // Remover o arquivo local após o upload para o GCS
-      fs.unlinkSync(filePath);
     }
 
     const data = {
@@ -197,12 +161,14 @@ app.delete('/produtos/:id', async (req, res) => {
       return res.status(404).json({ error: 'Produto não encontrado.' });
     }
 
-    // Deletar as fotos associadas no Google Cloud Storage
+    // Deletar as fotos associadas no diretório local
     for (let i = 1; i <= 10; i++) {
       const fotoKey = `foto0${i}`;
       if (produto[fotoKey]) {
-        const fileName = produto[fotoKey].split('/').pop();
-        await bucket.file(fileName).delete();
+        const filePath = path.join(uploadPath, path.basename(produto[fotoKey]));
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
       }
     }
 

@@ -27,7 +27,8 @@ if (!fs.existsSync(uploadDir)) {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
-app.use('/uploads', express.static(uploadDir)); // Serve os arquivos da pasta uploads
+app.use('/uploads', express.static(uploadDir));
+ // Serve os arquivos da pasta uploads
 
 // Configuração do multer
 const storage = multer.diskStorage({
@@ -47,44 +48,44 @@ app.post(
     '/produtos',
     upload.fields(Array.from({ length: 10 }, (_, i) => ({ name: `foto0${i + 1}` }))),
     async (req, res) => {
-        const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
-
-        // Validação do campo "tipo"
-        const validTypes = ["Apartamento", "Casa", "Terreno", "Imóvel Comercial"];
-        if (!validTypes.includes(tipo)) {
-            return res.status(400).json({ error: `Tipo inválido. Os valores permitidos são: ${validTypes.join(", ")}` });
+      const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
+  
+      // Validação do campo "tipo"
+      const validTypes = ["Apartamento", "Casa", "Terreno", "Imóvel Comercial"];
+      if (!validTypes.includes(tipo)) {
+        return res.status(400).json({ error: `Tipo inválido. Os valores permitidos são: ${validTypes.join(", ")}` });
+      }
+  
+      const data = {
+        titulo: titulo || null,
+        descricao: descricao || null,
+        quartos: parseInt(quartos) || 0,
+        banheiros: parseInt(banheiros) || 0,
+        garagem: parseInt(garagem) || 0,
+        preco: parseFloat(preco) || 0.0,
+        metragem: parseFloat(metragem) || null,
+        localizacao: localizacao || null,
+        tipo: tipo || null,
+      };
+  
+      // Salva as URLs das imagens no banco de dados
+      for (let i = 1; i <= 10; i++) {
+        if (req.files[`foto0${i}`]?.length) {
+          const uploadedFilePath = `/uploads/${req.files[`foto0${i}`][0].filename}`;
+          data[`foto0${i}`] = uploadedFilePath;
         }
-
-        const data = {
-            titulo: titulo || null,
-            descricao: descricao || null,
-            quartos: parseInt(quartos) || 0,
-            banheiros: parseInt(banheiros) || 0,
-            garagem: parseInt(garagem) || 0,
-            preco: parseFloat(preco) || 0.0,
-            metragem: parseFloat(metragem) || null,
-            localizacao: localizacao || null,
-            tipo: tipo || null,
-        };
-
-        // Salva as URLs das imagens no banco de dados
-        for (let i = 1; i <= 10; i++) {
-            if (req.files[`foto0${i}`]?.length) {
-                data[`foto0${i}`] = `/uploads/${req.files[`foto0${i}`][0].filename}`;
-            }
-        }
-
-        try {
-            const produto = await prisma.produto.create({ data });
-            res.status(201).json(produto);
-            console.log('Arquivos recebidos:', req.files);
-
-        } catch (error) {
-            console.error('Erro ao criar produto:', error);
-            res.status(500).json({ error: error.message || 'Erro ao criar produto' });
-        }
+      }
+  
+      try {
+        const produto = await prisma.produto.create({ data });
+        res.status(201).json(produto);
+        console.log('Arquivos salvos e dados inseridos no banco:', req.files);
+      } catch (error) {
+        console.error('Erro ao criar produto:', error);
+        res.status(500).json({ error: error.message || 'Erro ao criar produto' });
+      }
     }
-);
+  );
 
 app.get('/produtos', async (req, res) => {
     const baseUrl = getBaseUrl();

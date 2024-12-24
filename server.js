@@ -65,35 +65,40 @@ app.get('/produtos', async (req, res) => {
 
 // Endpoint para criar produtos com upload para o Google Cloud Storage
 app.post('/produtos', upload.array('fotos', 10), async (req, res) => {
-  const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
-
-  try {
-    const urls = [];
-    for (const file of req.files) {
-      const url = await uploadToGCS(file);
-      urls.push(url); // Salva as URLs das imagens
+    const { titulo, descricao, quartos, banheiros, garagem, preco, metragem, localizacao, tipo } = req.body;
+  
+    try {
+      console.log("Recebendo dados:", req.body);
+  
+      const urls = [];
+      for (const file of req.files) {
+        console.log("Arquivo recebido:", file.originalname);
+        const url = await uploadToGCS(file);
+        urls.push(url);
+      }
+  
+      const data = {
+        titulo,
+        descricao,
+        quartos: parseInt(quartos),
+        banheiros: parseInt(banheiros),
+        garagem: parseInt(garagem),
+        preco: parseFloat(preco),
+        metragem: parseFloat(metragem),
+        localizacao,
+        tipo,
+        fotos: urls,
+      };
+  
+      console.log("Salvando no banco de dados:", data);
+      const produto = await prisma.produto.create({ data });
+      res.status(201).json(produto);
+    } catch (error) {
+      console.error('Erro no backend:', error.message, error.stack);
+      res.status(500).json({ error: error.message });
     }
-
-    const data = {
-      titulo,
-      descricao,
-      quartos: parseInt(quartos),
-      banheiros: parseInt(banheiros),
-      garagem: parseInt(garagem),
-      preco: parseFloat(preco),
-      metragem: parseFloat(metragem),
-      localizacao,
-      tipo,
-      fotos: urls, // Armazena as URLs das imagens no banco
-    };
-
-    const produto = await prisma.produto.create({ data });
-    res.status(201).json(produto);
-  } catch (error) {
-    console.error('Erro ao salvar produto:', error);
-    res.status(500).json({ error: 'Erro ao salvar produto.' });
-  }
-});
+  });
+  
 
 // Endpoint para editar um produto
 app.put('/produtos/:id', upload.array('fotos', 10), async (req, res) => {

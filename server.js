@@ -86,7 +86,7 @@ app.post('/produtos', upload.array('fotos', 10), async (req, res) => {
         tipo,
         fotos: urls, // Array de URLs das fotos
       };
-  
+      
       const produto = await prisma.produto.create({ data });
       res.status(201).json(produto);
     } catch (error) {

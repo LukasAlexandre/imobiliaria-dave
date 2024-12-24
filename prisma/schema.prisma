@@ -10,14 +10,16 @@ datasource db {
 
 model Produto {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  titulo      String
-  descricao   String
-  quartos     Int
-  banheiros   Int
-  garagem     Int
-  preco       Float
-  metragem    Float
-  localizacao String
-  tipo        String
-  fotos       String[] // Array de strings para armazenar URLs das fotos
+  titulo       String
+  descricao    String
+  quartos      Int
+  banheiros    Int
+  garagem      Int
+  preco        Float
+  metragem     Float
+  localizacao  String
+  tipo         String
+  fotos        String[] // Array de strings para armazenar URLs das fotos
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

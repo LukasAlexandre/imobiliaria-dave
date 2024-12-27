@@ -84,6 +84,21 @@ app.post(
     } = req.body;
 
     try {
+      // Parseando os valores corretamente
+      const data = {
+        titulo: titulo || null,
+        descricao: descricao || null,
+        quartos: parseInt(quartos) || 0,
+        banheiros: parseInt(banheiros) || 0,
+        garagem: parseInt(garagem) || 0,
+        preco: parseFloat(preco) || 0,
+        metragemCasa: parseFloat(metragemCasa) || 0,
+        metragemTerreno: parseFloat(metragemTerreno) || 0,
+        localizacao: localizacao || null,
+        tipo: tipo || null,
+        observacoes: observacoes || null,
+      };
+
       const urls = {};
 
       for (const fieldName in req.files) {
@@ -92,22 +107,10 @@ app.post(
         urls[fieldName] = url;
       }
 
-      const data = {
-        titulo,
-        descricao,
-        quartos: parseInt(quartos),
-        banheiros: parseInt(banheiros),
-        garagem: parseInt(garagem),
-        preco: parseFloat(preco),
-        metragemCasa: parseFloat(metragemCasa),
-        metragemTerreno: parseFloat(metragemTerreno),
-        localizacao,
-        tipo,
-        observacoes,
-        ...urls, // Inclui foto01, foto02, ..., foto10
-      };
+      const produto = await prisma.produto.create({
+        data: { ...data, ...urls }, // Incluindo URLs das fotos
+      });
 
-      const produto = await prisma.produto.create({ data });
       res.status(201).json(produto);
     } catch (error) {
       console.error('Erro ao criar produto:', error.message, error.stack);
@@ -115,6 +118,7 @@ app.post(
     }
   }
 );
+
 
 // Endpoint para editar um produto
 app.put(

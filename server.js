@@ -54,70 +54,7 @@ app.get('/produtos', async (req, res) => {
 });
 
 // Endpoint para criar produtos com upload local
-app.post(
-  '/produtos',
-  localUpload.fields([
-    { name: 'foto01', maxCount: 1 },
-    { name: 'foto02', maxCount: 1 },
-    { name: 'foto03', maxCount: 1 },
-    { name: 'foto04', maxCount: 1 },
-    { name: 'foto05', maxCount: 1 },
-    { name: 'foto06', maxCount: 1 },
-    { name: 'foto07', maxCount: 1 },
-    { name: 'foto08', maxCount: 1 },
-    { name: 'foto09', maxCount: 1 },
-    { name: 'foto10', maxCount: 1 },
-  ]),
-  async (req, res) => {
-    const {
-      titulo,
-      descricao,
-      quartos,
-      banheiros,
-      garagem,
-      preco,
-      metragemCasa,
-      metragemTerreno,
-      localizacao,
-      tipo,
-      observacoes,
-    } = req.body;
-
-    try {
-      // Parseando os valores corretamente
-      const data = {
-        titulo: titulo || null,
-        descricao: descricao || null,
-        quartos: parseInt(quartos) || 0,
-        banheiros: parseInt(banheiros) || 0,
-        garagem: parseInt(garagem) || 0,
-        preco: parseFloat(preco) || 0,
-        metragemCasa: parseFloat(metragemCasa) || 0,
-        metragemTerreno: parseFloat(metragemTerreno) || 0,
-        localizacao: localizacao || null,
-        tipo: tipo || null,
-        observacoes: observacoes || null,
-      };
-
-      const urls = {};
-
-      for (const fieldName in req.files) {
-        const file = req.files[fieldName][0];
-        const url = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
-        urls[fieldName] = url;
-      }
-
-      const produto = await prisma.produto.create({
-        data: { ...data, ...urls }, // Incluindo URLs das fotos
-      });
-
-      res.status(201).json(produto);
-    } catch (error) {
-      console.error('Erro ao criar produto:', error.message, error.stack);
-      res.status(500).json({ error: error.message });
-    }
-  }
-);
+console.log(data)
 
 
 // Endpoint para editar um produto

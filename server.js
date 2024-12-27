@@ -89,78 +89,77 @@ app.put(
     } = req.body;
 
     try {
-      const urls = {};
+      const data = {
+        titulo: titulo || null,
+        descricao: descricao || null,
+        quartos: parseInt(quartos) || 0,
+        banheiros: parseInt(banheiros) || 0,
+        garagem: parseInt(garagem) || 0,
+        preco: parseFloat(preco) || 0,
+        metragemCasa: parseFloat(metragemCasa) || 0,
+        metragemTerreno: parseFloat(metragemTerreno) || 0,
+        localizacao: localizacao || null,
+        tipo: tipo || null,
+        observacoes: observacoes || null,
+      };
 
+      console.log('Dados prontos para salvar no banco:', data);
+
+      const urls = {};
       for (const fieldName in req.files) {
         const file = req.files[fieldName][0];
         const url = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
         urls[fieldName] = url;
       }
 
-      const data = {
-        titulo,
-        descricao,
-        quartos: parseInt(quartos),
-        banheiros: parseInt(banheiros),
-        garagem: parseInt(garagem),
-        preco: parseFloat(preco),
-        metragemCasa: parseFloat(metragemCasa),
-        metragemTerreno: parseFloat(metragemTerreno),
-        localizacao,
-        tipo,
-        observacoes,
-        ...urls, // Atualiza fotos apenas se houver novas
-      };
+      console.log('URLs geradas:', urls);
 
-      const produto = await prisma.produto.update({
-        where: { id },
-        data,
+      const produto = await prisma.produto.create({
+        data: { ...data, ...urls },
       });
 
-      res.status(200).json(produto);
+      res.status(201).json(produto);
     } catch (error) {
-      console.error('Erro ao editar produto:', error);
-      res.status(500).json({ error: 'Erro ao editar produto.' });
-    }
-  }
-);
-
-// Endpoint para deletar um produto
-app.delete('/produtos/:id', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const produto = await prisma.produto.findUnique({
-      where: { id },
-    });
-
-    if (!produto) {
-      return res.status(404).json({ error: 'Produto não encontrado.' });
+      console.error('Erro ao criar produto:', error.message, error.stack);
+      res.status(500).json({ error: error.message });
     }
 
-    // Deletar as fotos associadas no diretório local
-    for (let i = 1; i <= 10; i++) {
-      const fotoKey = `foto0${i}`;
-      if (produto[fotoKey]) {
-        const filePath = path.join(uploadPath, path.basename(produto[fotoKey]));
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
+    // Endpoint para deletar um produto
+    app.delete('/produtos/:id', async (req, res) => {
+      const { id } = req.params;
+
+      try {
+        const produto = await prisma.produto.findUnique({
+          where: { id },
+        });
+
+        if (!produto) {
+          return res.status(404).json({ error: 'Produto não encontrado.' });
         }
-      }
-    }
 
-    await prisma.produto.delete({
-      where: { id },
+        // Deletar as fotos associadas no diretório local
+        for (let i = 1; i <= 10; i++) {
+          const fotoKey = `foto0${i}`;
+          if (produto[fotoKey]) {
+            const filePath = path.join(uploadPath, path.basename(produto[fotoKey]));
+            if (fs.existsSync(filePath)) {
+              fs.unlinkSync(filePath);
+            }
+          }
+        }
+
+        await prisma.produto.delete({
+          where: { id },
+        });
+
+        res.status(200).json({ message: 'Produto deletado com sucesso!' });
+      } catch (error) {
+        console.error('Erro ao deletar produto:', error);
+        res.status(500).json({ error: 'Erro ao deletar produto.' });
+      }
     });
 
-    res.status(200).json({ message: 'Produto deletado com sucesso!' });
-  } catch (error) {
-    console.error('Erro ao deletar produto:', error);
-    res.status(500).json({ error: 'Erro ao deletar produto.' });
-  }
-});
-
-// Inicializa o servidor
-app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`);
-});
+    // Inicializa o servidor
+    app.listen(port, () => {
+      console.log(`Servidor rodando na porta ${port}`);
+    });

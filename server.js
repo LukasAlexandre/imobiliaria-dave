@@ -76,9 +76,11 @@ app.post(
       banheiros,
       garagem,
       preco,
-      metragem,
+      metragemCasa,
+      metragemTerreno,
       localizacao,
       tipo,
+      observacoes,
     } = req.body;
 
     try {
@@ -88,7 +90,6 @@ app.post(
         const file = req.files[fieldName][0];
         const url = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
         urls[fieldName] = url;
-        console.log(`Salvando arquivo em: ${uploadPath}/${file.filename}`);
       }
 
       const data = {
@@ -98,16 +99,18 @@ app.post(
         banheiros: parseInt(banheiros),
         garagem: parseInt(garagem),
         preco: parseFloat(preco),
-        metragem: parseFloat(metragem),
+        metragemCasa: parseFloat(metragemCasa),
+        metragemTerreno: parseFloat(metragemTerreno),
         localizacao,
         tipo,
+        observacoes,
         ...urls, // Inclui foto01, foto02, ..., foto10
       };
 
       const produto = await prisma.produto.create({ data });
       res.status(201).json(produto);
     } catch (error) {
-      console.error('Erro no backend:', error.message, error.stack);
+      console.error('Erro ao criar produto:', error.message, error.stack);
       res.status(500).json({ error: error.message });
     }
   }
@@ -137,9 +140,11 @@ app.put(
       banheiros,
       garagem,
       preco,
-      metragem,
+      metragemCasa,
+      metragemTerreno,
       localizacao,
       tipo,
+      observacoes,
     } = req.body;
 
     try {
@@ -149,7 +154,6 @@ app.put(
         const file = req.files[fieldName][0];
         const url = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
         urls[fieldName] = url;
-        console.log(`Atualizando arquivo em: ${uploadPath}/${file.filename}`);
       }
 
       const data = {
@@ -159,9 +163,11 @@ app.put(
         banheiros: parseInt(banheiros),
         garagem: parseInt(garagem),
         preco: parseFloat(preco),
-        metragem: parseFloat(metragem),
+        metragemCasa: parseFloat(metragemCasa),
+        metragemTerreno: parseFloat(metragemTerreno),
         localizacao,
         tipo,
+        observacoes,
         ...urls, // Atualiza fotos apenas se houver novas
       };
 

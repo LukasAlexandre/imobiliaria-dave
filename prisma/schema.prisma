@@ -16,8 +16,8 @@ model Produto {
   banheiros      Int
   garagem        Int
   preco          Float
-  metragemCasa   Float
-  metragemTerreno Float
+  metragemhouse   Float
+  metragemterra Float
   localizacao    String?
   tipo           String?
   observacoes    String?

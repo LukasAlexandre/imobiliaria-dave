@@ -54,12 +54,8 @@ app.get('/produtos', async (req, res) => {
 });
 
 // Endpoint para criar produtos com upload local
-console.log(data)
-
-
-// Endpoint para editar um produto
-app.put(
-  '/produtos/:id',
+app.post(
+  '/produtos',
   localUpload.fields([
     { name: 'foto01', maxCount: 1 },
     { name: 'foto02', maxCount: 1 },
@@ -73,7 +69,6 @@ app.put(
     { name: 'foto10', maxCount: 1 },
   ]),
   async (req, res) => {
-    const { id } = req.params;
     const {
       titulo,
       descricao,
@@ -103,8 +98,6 @@ app.put(
         observacoes: observacoes || null,
       };
 
-      console.log('Dados prontos para salvar no banco:', data);
-
       const urls = {};
       for (const fieldName in req.files) {
         const file = req.files[fieldName][0];
@@ -112,6 +105,7 @@ app.put(
         urls[fieldName] = url;
       }
 
+      console.log('Dados a serem salvos:', data);
       console.log('URLs geradas:', urls);
 
       const produto = await prisma.produto.create({
@@ -120,46 +114,48 @@ app.put(
 
       res.status(201).json(produto);
     } catch (error) {
-      console.error('Erro ao criar produto:', error.message, error.stack);
-      res.status(500).json({ error: error.message });
+      console.error('Erro ao criar produto:', error);
+      res.status(500).json({ error: 'Erro ao criar produto.' });
+    }
+  }
+);
+
+// Endpoint para deletar um produto
+app.delete('/produtos/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const produto = await prisma.produto.findUnique({
+      where: { id },
+    });
+
+    if (!produto) {
+      return res.status(404).json({ error: 'Produto não encontrado.' });
     }
 
-    // Endpoint para deletar um produto
-    app.delete('/produtos/:id', async (req, res) => {
-      const { id } = req.params;
-
-      try {
-        const produto = await prisma.produto.findUnique({
-          where: { id },
-        });
-
-        if (!produto) {
-          return res.status(404).json({ error: 'Produto não encontrado.' });
+    // Deletar as fotos associadas no diretório local
+    for (let i = 1; i <= 10; i++) {
+      const fotoKey = `foto0${i}`;
+      if (produto[fotoKey]) {
+        const filePath = path.join(uploadPath, path.basename(produto[fotoKey]));
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
         }
-
-        // Deletar as fotos associadas no diretório local
-        for (let i = 1; i <= 10; i++) {
-          const fotoKey = `foto0${i}`;
-          if (produto[fotoKey]) {
-            const filePath = path.join(uploadPath, path.basename(produto[fotoKey]));
-            if (fs.existsSync(filePath)) {
-              fs.unlinkSync(filePath);
-            }
-          }
-        }
-
-        await prisma.produto.delete({
-          where: { id },
-        });
-
-        res.status(200).json({ message: 'Produto deletado com sucesso!' });
-      } catch (error) {
-        console.error('Erro ao deletar produto:', error);
-        res.status(500).json({ error: 'Erro ao deletar produto.' });
       }
+    }
+
+    await prisma.produto.delete({
+      where: { id },
     });
 
-    // Inicializa o servidor
-    app.listen(port, () => {
-      console.log(`Servidor rodando na porta ${port}`);
-    });
+    res.status(200).json({ message: 'Produto deletado com sucesso!' });
+  } catch (error) {
+    console.error('Erro ao deletar produto:', error);
+    res.status(500).json({ error: 'Erro ao deletar produto.' });
+  }
+});
+
+// Inicializa o servidor
+app.listen(port, () => {
+  console.log(`Servidor rodando na porta ${port}`);
+});

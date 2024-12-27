@@ -1,36 +1,25 @@
-generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "windows", "debian-openssl-3.0.x"]
-}
-
-datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
-}
-
-model Produto {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  titulo         String
-  descricao      String
-  quartos        Int
-  banheiros      Int
-  garagem        Int
-  preco          Float
-  metragemCasa   Float    // Nova metragem específica para a casa
-  metragemTerreno Float    // Nova metragem específica para o terreno
-  localizacao    String
-  tipo           String
-  foto01         String? // Foto 1 (opcional)
-  foto02         String? // Foto 2 (opcional)
-  foto03         String? // Foto 3 (opcional)
-  foto04         String? // Foto 4 (opcional)
-  foto05         String? // Foto 5 (opcional)
-  foto06         String? // Foto 6 (opcional)
-  foto07         String? // Foto 7 (opcional)
-  foto08         String? // Foto 8 (opcional)
-  foto09         String? // Foto 9 (opcional)
-  foto10         String? // Foto 10 (opcional)
-  observacoes    String?  // Campo para observações (opcional)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+model produto {
+  id              String   @id @default(cuid())
+  titulo          String
+  descricao       String
+  observacoes     String?
+  quartos         Int
+  banheiros       Int
+  garagem         Int
+  preco           Float
+  metragemCasa    Float?
+  metragemTerreno Float?
+  localizacao     String
+  tipo            String
+  foto01          String?
+  foto02          String?
+  foto03          String?
+  foto04          String?
+  foto05          String?
+  foto06          String?
+  foto07          String?
+  foto08          String?
+  foto09          String?
+  foto10          String?
+  createdAt       DateTime @default(now())
 }

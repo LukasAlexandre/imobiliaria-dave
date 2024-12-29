@@ -92,7 +92,8 @@ app.post(
   ]),
   async (req, res) => {
     try {
-      
+      console.log('Dados recebidos no backend:', req.body);
+      console.log('Arquivos recebidos no backend:', req.files);
 
       // Converta os campos para números
       req.body.quartos = parseInt(req.body.quartos);

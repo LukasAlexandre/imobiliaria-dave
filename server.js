@@ -92,34 +92,28 @@ app.post(
   ]),
   async (req, res) => {
     try {
-      // Validação
+      // Converta os campos para números
+      req.body.quartos = parseInt(req.body.quartos);
+      req.body.banheiros = parseInt(req.body.banheiros);
+      req.body.garagem = parseInt(req.body.garagem);
+      req.body.preco = parseFloat(req.body.preco);
+      req.body.metragemCasa = parseFloat(req.body.metragemCasa);
+      req.body.metragemTerreno = parseFloat(req.body.metragemTerreno);
+
+      // Validação com Zod
       produtoSchema.parse(req.body);
 
       const data = {
-        titulo: req.body.titulo || null,
-        descricao: req.body.descricao || null,
-        quartos: parseInt(req.body.quartos) || 0,
-        banheiros: parseInt(req.body.banheiros) || 0,
-        garagem: parseInt(req.body.garagem) || 0,
-        preco: parseFloat(req.body.preco) || 0,
-        metragemCasa: parseFloat(req.body.metragemCasa) || 0,
-        metragemTerreno: parseFloat(req.body.metragemTerreno) || 0,
-        localizacao: req.body.localizacao || null,
-        tipo: req.body.tipo || null,
-        observacoes: req.body.observacoes || null,
+        ...req.body,
+        ...Object.fromEntries(
+          Object.entries(req.files || {}).map(([key, files]) => [
+            key,
+            `${req.protocol}://${req.get('host')}/uploads/${files[0].filename}`,
+          ])
+        ),
       };
 
-      // Adicionar URLs das fotos
-      const urls = {};
-      for (const fieldName in req.files) {
-        const file = req.files[fieldName][0];
-        urls[fieldName] = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
-      }
-
-      const produto = await prisma.produto.create({
-        data: { ...data, ...urls },
-      });
-
+      const produto = await prisma.produto.create({ data });
       res.status(201).json(produto);
     } catch (error) {
       console.error('Erro ao criar produto:', error);

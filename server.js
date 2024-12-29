@@ -92,6 +92,8 @@ app.post(
   ]),
   async (req, res) => {
     try {
+      
+
       // Converta os campos para números
       req.body.quartos = parseInt(req.body.quartos);
       req.body.banheiros = parseInt(req.body.banheiros);
@@ -112,7 +114,7 @@ app.post(
           ])
         ),
       };
-
+      console.log('Dados recebidos no POST:', data);
       const produto = await prisma.produto.create({ data });
       res.status(201).json(produto);
     } catch (error) {

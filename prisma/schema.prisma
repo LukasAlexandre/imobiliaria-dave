@@ -7,17 +7,16 @@ datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
-
 model Produto {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   titulo          String?
   descricao       String?
-  quartos         Int?
-  banheiros       Int?
-  garagem         Int?
-  preco           Float?
-  metragemCasa    Float?
-  metragemTerreno Float?
+  quartos         Int      @default(0)
+  banheiros       Int      @default(0)
+  garagem         Int      @default(0)
+  preco           Float    @default(0)
+  metragemCasa    Float    @default(0)
+  metragemTerreno Float    @default(0)
   localizacao     String?
   tipo            String?
   observacoes     String?
@@ -31,5 +30,5 @@ model Produto {
   foto08          String?
   foto09          String?
   foto10          String?
-  createdAt       DateTime? @default(now())
+  createdAt       DateTime @default(now())
 }

@@ -31,5 +31,5 @@ model Produto {
   foto08          String?
   foto09          String?
   foto10          String?
-  createdAt       DateTime @default(now())
+  createdAt       DateTime? @default(now())
 }

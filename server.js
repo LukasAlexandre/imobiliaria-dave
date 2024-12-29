@@ -23,17 +23,20 @@ const uploadPath = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
+
 const corsOptions = {
-  origin: ['http://localhost:3000', 'https://seu-frontend-onrender.com'], // Substitua pelo domínio correto do seu frontend
+  origin: ['http://localhost:3000', 'https://imobiliaria-dave.onrender.com/'], // Substitua pelo domínio correto do seu frontend
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
+
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cors());
 app.use(cors(corsOptions));
 app.use('/uploads', express.static(uploadPath));
+
+// Validação do esquema
 const produtoSchema = z.object({
   titulo: z.string().nullable(),
   descricao: z.string().nullable(),
@@ -47,6 +50,7 @@ const produtoSchema = z.object({
   tipo: z.string().nullable(),
   observacoes: z.string().nullable(),
 });
+
 // Configuração do multer para salvar arquivos localmente
 const localUpload = multer({
   storage: multer.diskStorage({
@@ -63,9 +67,7 @@ const localUpload = multer({
 // Endpoint para listar todos os produtos
 app.get('/produtos', async (req, res) => {
   try {
-    console.log('Tentando buscar produtos...');
     const produtos = await prisma.produto.findMany();
-    console.log('Produtos encontrados:', produtos);
     res.status(200).json(produtos);
   } catch (error) {
     console.error('Erro ao buscar produtos:', error);
@@ -74,63 +76,57 @@ app.get('/produtos', async (req, res) => {
 });
 
 // Endpoint para criar produtos com upload local
-app.post('/produtos', localUpload.fields([...]), async (req, res) => {
-  try {
-    // Validação
-    produtoSchema.parse(req.body);
+app.post(
+  '/produtos',
+  localUpload.fields([
+    { name: 'foto01', maxCount: 1 },
+    { name: 'foto02', maxCount: 1 },
+    { name: 'foto03', maxCount: 1 },
+    { name: 'foto04', maxCount: 1 },
+    { name: 'foto05', maxCount: 1 },
+    { name: 'foto06', maxCount: 1 },
+    { name: 'foto07', maxCount: 1 },
+    { name: 'foto08', maxCount: 1 },
+    { name: 'foto09', maxCount: 1 },
+    { name: 'foto10', maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      // Validação
+      produtoSchema.parse(req.body);
 
-    const data = {
-      ...req.body,
-      preco: parseFloat(req.body.preco),
-      quartos: parseInt(req.body.quartos),
-      banheiros: parseInt(req.body.banheiros),
-      garagem: parseInt(req.body.garagem),
-      metragemCasa: parseFloat(req.body.metragemCasa),
-      metragemTerreno: parseFloat(req.body.metragemTerreno),
-    };
+      const data = {
+        titulo: req.body.titulo || null,
+        descricao: req.body.descricao || null,
+        quartos: parseInt(req.body.quartos) || 0,
+        banheiros: parseInt(req.body.banheiros) || 0,
+        garagem: parseInt(req.body.garagem) || 0,
+        preco: parseFloat(req.body.preco) || 0,
+        metragemCasa: parseFloat(req.body.metragemCasa) || 0,
+        metragemTerreno: parseFloat(req.body.metragemTerreno) || 0,
+        localizacao: req.body.localizacao || null,
+        tipo: req.body.tipo || null,
+        observacoes: req.body.observacoes || null,
+      };
 
-    // Lógica para salvar no banco
-    const produto = await prisma.produto.create({ data });
-    res.status(201).json(produto);
-  } catch (error) {
-    res.status(400).json({ error: 'Erro de validação: ' + error.message });
-  }
-});
-
-// Endpoint para deletar um produto
-app.delete('/produtos/:id', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const produto = await prisma.produto.findUnique({
-      where: { id },
-    });
-
-    if (!produto) {
-      return res.status(404).json({ error: 'Produto não encontrado.' });
-    }
-
-    // Deletar as fotos associadas no diretório local
-    for (let i = 1; i <= 10; i++) {
-      const fotoKey = `foto0${i}`;
-      if (produto[fotoKey]) {
-        const filePath = path.join(uploadPath, path.basename(produto[fotoKey]));
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
+      // Adicionar URLs das fotos
+      const urls = {};
+      for (const fieldName in req.files) {
+        const file = req.files[fieldName][0];
+        urls[fieldName] = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
       }
+
+      const produto = await prisma.produto.create({
+        data: { ...data, ...urls },
+      });
+
+      res.status(201).json(produto);
+    } catch (error) {
+      console.error('Erro ao criar produto:', error);
+      res.status(400).json({ error: error.message || 'Erro ao criar produto.' });
     }
-
-    await prisma.produto.delete({
-      where: { id },
-    });
-
-    res.status(200).json({ message: 'Produto deletado com sucesso!' });
-  } catch (error) {
-    console.error('Erro ao deletar produto:', error);
-    res.status(500).json({ error: 'Erro ao deletar produto.' });
   }
-});
+);
 
 // Inicializa o servidor
 app.listen(port, () => {

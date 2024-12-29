@@ -14,8 +14,8 @@ model Produto {
   quartos         Int      @default(0)
   banheiros       Int      @default(0)
   garagem         Int      @default(0)
-  preco           Float?   // Agora aceita `null`
-  metragemCasa    Float    @default(0)
+  preco           Float    @default(0)
+  metragemCasa    Float    @default(0) // Certifique-se de que está no modelo
   metragemTerreno Float    @default(0)
   localizacao     String?
   tipo            String?

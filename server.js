@@ -48,7 +48,7 @@ const produtoSchema = z.object({
   metragemTerreno: z.number().min(0),
   localizacao: z.string().nullable(),
   tipo: z.string().nullable(),
-  observacoes: z.string().nullable(), // Corrigido para 'observacoes' para alinhar com o frontend
+  obseracao: z.string().nullable(), // Ajustado ao schema
 });
 
 // Configuração do multer para salvar arquivos localmente

@@ -44,7 +44,6 @@ const produtoSchema = z.object({
   banheiros: z.number().min(0),
   garagem: z.number().min(0),
   preco: z.number().min(0),
-  metragemCasa: z.number().min(0),
   metragemTerreno: z.number().min(0),
   localizacao: z.string(),
   tipo: z.string(),
@@ -99,7 +98,6 @@ app.post(
       req.body.banheiros = parseInt(req.body.banheiros);
       req.body.garagem = parseInt(req.body.garagem);
       req.body.preco = parseFloat(req.body.preco);
-      req.body.metragemCasa = parseFloat(req.body.metragemCasa);
       req.body.metragemTerreno = parseFloat(req.body.metragemTerreno);
 
       // Validação com Zod

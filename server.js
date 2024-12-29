@@ -94,13 +94,11 @@ app.post(
       console.log('Dados recebidos no backend:', req.body);
       console.log('Arquivos recebidos no backend:', req.files);
 
-      // Converta os campos para números
-      req.body.quartos = parseInt(req.body.quartos);
-      req.body.banheiros = parseInt(req.body.banheiros);
-      req.body.garagem = parseInt(req.body.garagem);
-      req.body.preco = parseFloat(req.body.preco);
-      req.body.metragemCasa = parseFloat(req.body.metragemCasa);
-      req.body.metragemTerreno = parseFloat(req.body.metragemTerreno);
+      // Validação e fallback para valores padrão
+      const camposNumericos = ['quartos', 'banheiros', 'garagem', 'preco', 'metragemCasa', 'metragemTerreno'];
+      camposNumericos.forEach((campo) => {
+        req.body[campo] = parseFloat(req.body[campo]) || 0; // Converte para número ou define como 0
+      });
 
       // Validação com Zod
       produtoSchema.parse(req.body);

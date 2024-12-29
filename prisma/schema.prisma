@@ -15,11 +15,11 @@ model Produto {
   banheiros       Int      @default(0)
   garagem         Int      @default(0)
   preco           Float    @default(0)
-  metragemCasa    Float    @default(0) // Certifique-se de que está no modelo
+  metragemCasa    Float    @default(0)
   metragemTerreno Float    @default(0)
   localizacao     String?
   tipo            String?
-  observacoes     String?
+  observacoes     String?  // Adicionado o campo
   foto01          String?
   foto02          String?
   foto03          String?

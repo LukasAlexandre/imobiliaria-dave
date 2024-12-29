@@ -98,7 +98,7 @@ app.post(
         banheiros: parseInt(banheiros) || 0,
         garagem: parseInt(garagem) || 0,
         preco: parseFloat(preco) || 0,
-        metragemCasa: parseFloat(metragemCasa) || 0,
+        metragemCasa: parseFloat(metragemCasa) || 0, // Certifique-se de mapear este campo corretamente
         metragemTerreno: parseFloat(metragemTerreno) || 0,
         localizacao: localizacao || null,
         tipo: tipo || null,

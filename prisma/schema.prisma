@@ -9,15 +9,15 @@ datasource db {
 }
 
 model Produto {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
   titulo         String?
   descricao      String?
   quartos        Int
   banheiros      Int
   garagem        Int
   preco          Float
-  metragemhouse   Float
-  metragemterra Float
+  metragemCasa   Float
+  metragemTerreno Float
   localizacao    String?
   tipo           String?
   observacoes    String?

@@ -6,6 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
+import { z } from 'zod';
 
 dotenv.config();
 
@@ -33,7 +34,19 @@ app.use(express.json());
 app.use(cors());
 app.use(cors(corsOptions));
 app.use('/uploads', express.static(uploadPath));
-
+const produtoSchema = z.object({
+  titulo: z.string().nullable(),
+  descricao: z.string().nullable(),
+  quartos: z.number().min(0),
+  banheiros: z.number().min(0),
+  garagem: z.number().min(0),
+  preco: z.number().min(0),
+  metragemCasa: z.number().min(0),
+  metragemTerreno: z.number().min(0),
+  localizacao: z.string().nullable(),
+  tipo: z.string().nullable(),
+  observacoes: z.string().nullable(),
+});
 // Configuração do multer para salvar arquivos localmente
 const localUpload = multer({
   storage: multer.diskStorage({
@@ -61,71 +74,28 @@ app.get('/produtos', async (req, res) => {
 });
 
 // Endpoint para criar produtos com upload local
-app.post(
-  '/produtos',
-  localUpload.fields([
-    { name: 'foto01', maxCount: 1 },
-    { name: 'foto02', maxCount: 1 },
-    { name: 'foto03', maxCount: 1 },
-    { name: 'foto04', maxCount: 1 },
-    { name: 'foto05', maxCount: 1 },
-    { name: 'foto06', maxCount: 1 },
-    { name: 'foto07', maxCount: 1 },
-    { name: 'foto08', maxCount: 1 },
-    { name: 'foto09', maxCount: 1 },
-    { name: 'foto10', maxCount: 1 },
-  ]),
-  async (req, res) => {
-    const {
-      titulo,
-      descricao,
-      quartos,
-      banheiros,
-      garagem,
-      preco,
-      metragemCasa,
-      metragemTerreno,
-      localizacao,
-      tipo,
-      observacoes,
-    } = req.body;
+app.post('/produtos', localUpload.fields([...]), async (req, res) => {
+  try {
+    // Validação
+    produtoSchema.parse(req.body);
 
-    try {
-      const data = {
-        titulo: titulo || null,
-        descricao: descricao || null,
-        quartos: parseInt(quartos) || 0,
-        banheiros: parseInt(banheiros) || 0,
-        garagem: parseInt(garagem) || 0,
-        preco: parseFloat(preco) || 0,
-        metragemCasa: parseFloat(metragemCasa) || 0, // Certifique-se de mapear este campo corretamente
-        metragemTerreno: parseFloat(metragemTerreno) || 0,
-        localizacao: localizacao || null,
-        tipo: tipo || null,
-        observacoes: observacoes || null,
-      };
+    const data = {
+      ...req.body,
+      preco: parseFloat(req.body.preco),
+      quartos: parseInt(req.body.quartos),
+      banheiros: parseInt(req.body.banheiros),
+      garagem: parseInt(req.body.garagem),
+      metragemCasa: parseFloat(req.body.metragemCasa),
+      metragemTerreno: parseFloat(req.body.metragemTerreno),
+    };
 
-      const urls = {};
-      for (const fieldName in req.files) {
-        const file = req.files[fieldName][0];
-        const url = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
-        urls[fieldName] = url;
-      }
-
-      console.log('Dados recebidos:', data);
-      console.log('URLs dos arquivos:', urls);
-
-      const produto = await prisma.produto.create({
-        data: { ...data, ...urls },
-      });
-
-      res.status(201).json(produto);
-    } catch (error) {
-      console.error('Erro ao criar produto:', error);
-      res.status(500).json({ error: error.message || 'Erro ao criar produto.' });
-    }
+    // Lógica para salvar no banco
+    const produto = await prisma.produto.create({ data });
+    res.status(201).json(produto);
+  } catch (error) {
+    res.status(400).json({ error: 'Erro de validação: ' + error.message });
   }
-);
+});
 
 // Endpoint para deletar um produto
 app.delete('/produtos/:id', async (req, res) => {

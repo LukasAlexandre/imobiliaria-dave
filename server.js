@@ -17,8 +17,8 @@ const port = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configuração da pasta local para upload no Render
-const uploadPath = '/var/data/uploads';
+// Configuração da pasta local para upload
+const uploadPath = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
@@ -105,8 +105,8 @@ app.post(
         urls[fieldName] = url;
       }
 
-      console.log('Dados a serem salvos:', data);
-      console.log('URLs geradas:', urls);
+      console.log('Dados recebidos:', data);
+      console.log('URLs dos arquivos:', urls);
 
       const produto = await prisma.produto.create({
         data: { ...data, ...urls },
@@ -115,7 +115,7 @@ app.post(
       res.status(201).json(produto);
     } catch (error) {
       console.error('Erro ao criar produto:', error);
-      res.status(500).json({ error: 'Erro ao criar produto.' });
+      res.status(500).json({ error: error.message || 'Erro ao criar produto.' });
     }
   }
 );

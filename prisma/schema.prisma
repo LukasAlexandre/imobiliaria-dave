@@ -15,8 +15,8 @@ model Produto {
   banheiros       Int      @default(0)
   garagem         Int      @default(0)
   preco           Float?   // Agora aceita `null`
-  metragemCasa    Float    
-  metragemTerreno Float    
+  metragemCasa    Float?    
+  metragemTerreno Float?    
   localizacao     String?
   tipo            String?
   observacoes     String?

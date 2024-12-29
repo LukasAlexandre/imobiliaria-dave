@@ -25,7 +25,7 @@ if (!fs.existsSync(uploadPath)) {
 }
 
 const corsOptions = {
-  origin: ['http://localhost:3000', 'https://imobiliaria-dave.onrender.com/'], // Substitua pelo domínio correto do seu frontend
+  origin: ['http://localhost:3000', 'https://imobiliaria-dave.onrender.com/'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
@@ -48,7 +48,7 @@ const produtoSchema = z.object({
   metragemTerreno: z.number().min(0),
   localizacao: z.string().nullable(),
   tipo: z.string().nullable(),
-  observacoes: z.string().nullable(),
+  obseracao: z.string().nullable(),
 });
 
 // Configuração do multer para salvar arquivos localmente

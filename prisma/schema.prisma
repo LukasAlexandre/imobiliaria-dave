@@ -19,7 +19,6 @@ model Produto {
   metragemTerreno Float    @default(0)
   localizacao     String?
   tipo            String?
-  obseracao     String?  // Adicionado o campo
   foto01          String?
   foto02          String?
   foto03          String?

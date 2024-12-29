@@ -40,7 +40,6 @@ app.use('/uploads', express.static(uploadPath));
 const produtoSchema = z.object({
   titulo: z.string(),
   descricao: z.string(),
-  obseracao: z.string(), // Certifique-se de que está correto
   quartos: z.number().min(0),
   banheiros: z.number().min(0),
   garagem: z.number().min(0),

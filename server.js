@@ -44,8 +44,8 @@ const produtoSchema = z.object({
   banheiros: z.number().min(0),
   garagem: z.number().min(0),
   preco: z.number().min(0),
-  metragemCasa: z.number().min(0),
-  metragemTerreno: z.number().min(0),
+  metragemCasa: z.number().int().min(0),
+  metragemTerreno: z.number().int().min(0),
   localizacao: z.string(),
   tipo: z.string(),
 });
@@ -97,7 +97,7 @@ app.post(
       // Validação e fallback para valores padrão
       const camposNumericos = ['quartos', 'banheiros', 'garagem', 'preco', 'metragemCasa', 'metragemTerreno'];
       camposNumericos.forEach((campo) => {
-        req.body[campo] = parseFloat(req.body[campo]) || 0; // Converte para número ou define como 0
+        req.body[campo] = parseInt(req.body[campo], 10) || 0; // Converte para número inteiro ou define como 0
       });
 
       // Validação com Zod
@@ -113,7 +113,6 @@ app.post(
         ),
       };
       console.log('Dados sendo enviados para o Prisma:', data);
-
 
       const produto = await prisma.produto.create({ data });
       res.status(201).json(produto);

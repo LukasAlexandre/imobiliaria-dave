@@ -22,11 +22,16 @@ const uploadPath = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
-
+const corsOptions = {
+  origin: ['http://localhost:3000', 'https://seu-frontend-onrender.com'], // Substitua pelo domínio correto do seu frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
+app.use(cors(corsOptions));
 app.use('/uploads', express.static(uploadPath));
 
 // Configuração do multer para salvar arquivos localmente

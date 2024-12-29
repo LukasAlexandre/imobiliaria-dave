@@ -38,17 +38,17 @@ app.use('/uploads', express.static(uploadPath));
 
 // Validação do esquema
 const produtoSchema = z.object({
-  titulo: z.string().nullable(),
-  descricao: z.string().nullable(),
+  titulo: z.string(),
+  descricao: z.string(),
+  obseracao: z.string(), // Certifique-se de que está correto
   quartos: z.number().min(0),
   banheiros: z.number().min(0),
   garagem: z.number().min(0),
   preco: z.number().min(0),
   metragemCasa: z.number().min(0),
   metragemTerreno: z.number().min(0),
-  localizacao: z.string().nullable(),
-  tipo: z.string().nullable(),
-  obseracao: z.string().nullable(), // Ajustado ao schema
+  localizacao: z.string(),
+  tipo: z.string()
 });
 
 // Configuração do multer para salvar arquivos localmente

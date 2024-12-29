@@ -45,11 +45,13 @@ const localUpload = multer({
 // Endpoint para listar todos os produtos
 app.get('/produtos', async (req, res) => {
   try {
+    console.log('Tentando buscar produtos...');
     const produtos = await prisma.produto.findMany();
+    console.log('Produtos encontrados:', produtos);
     res.status(200).json(produtos);
   } catch (error) {
     console.error('Erro ao buscar produtos:', error);
-    res.status(500).json({ error: 'Erro ao buscar produtos.' });
+    res.status(500).json({ error: error.message || 'Erro ao buscar produtos.' });
   }
 });
 

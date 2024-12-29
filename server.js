@@ -112,7 +112,9 @@ app.post(
           ])
         ),
       };
-      console.log('Dados recebidos no POST:', data);
+      console.log('Dados sendo enviados para o Prisma:', data);
+
+
       const produto = await prisma.produto.create({ data });
       res.status(201).json(produto);
     } catch (error) {

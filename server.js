@@ -44,8 +44,6 @@ const produtoSchema = z.object({
   banheiros: z.number().int().min(0),
   garagem: z.number().int().min(0),
   preco: z.number().int().min(0),
-  metragemCasa: z.number().int().min(0),
-  metragemTerreno: z.number().int().min(0),
   localizacao: z.string(),
   tipo: z.string(),
 });
@@ -95,7 +93,7 @@ app.post(
       console.log('Arquivos recebidos no backend:', req.files);
 
       // Validação e fallback para valores padrão
-      const camposNumericos = ['quartos', 'banheiros', 'garagem', 'preco', 'metragemCasa', 'metragemTerreno'];
+      const camposNumericos = ['quartos', 'banheiros', 'garagem', 'preco'];
       camposNumericos.forEach((campo) => {
         req.body[campo] = parseInt(req.body[campo], 10) || 0; // Converte para número inteiro ou define como 0
       });

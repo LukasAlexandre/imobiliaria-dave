@@ -103,6 +103,7 @@ app.post(
 
       const data = {
         ...req.body,
+        createdAt: req.body.createdAt || new Date(), // Adiciona a data atual se não estiver presente
         ...Object.fromEntries(
           Object.entries(req.files || {}).map(([key, files]) => [
             key,

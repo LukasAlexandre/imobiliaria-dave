@@ -103,6 +103,7 @@ app.post(
 
       const data = {
         ...req.body,
+        createdAt: new Date(req.body.createdAt), // Certifique-se de que `req.body.createdAt` é uma string ISO válida
         ...Object.fromEntries(
           Object.entries(req.files || {}).map(([key, files]) => [
             key,

@@ -103,7 +103,9 @@ app.post(
 
       const data = {
         ...req.body,
-        createdAt: new Date(req.body.createdAt), // Certifique-se de que `req.body.createdAt` é uma string ISO válida
+        createdAt: req.body.createdAt && !isNaN(Date.parse(req.body.createdAt))
+          ? new Date(req.body.createdAt) // Usa a data fornecida se for válida
+          : new Date(), // Caso contrário, define a data atual
         ...Object.fromEntries(
           Object.entries(req.files || {}).map(([key, files]) => [
             key,

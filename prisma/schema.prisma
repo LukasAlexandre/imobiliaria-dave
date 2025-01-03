@@ -10,8 +10,8 @@ datasource db {
 
 model Produto {
   id             String @id @default(auto()) @map("_id") @db.ObjectId
-  areaConstruida Int
-  areaTerreno    Int
+  construida Int
+  terreno    Int
   banheiros      Int
   descricao      String
   titulo         String
@@ -20,7 +20,7 @@ model Produto {
   tipo           String
   garagem        Int
   quartos        Int
-  createdAt      DateTime @default(now())
+  createdat      DateTime @default(now())
   foto01         String?
   foto02         String?
   foto03         String?

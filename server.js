@@ -104,6 +104,10 @@ app.post(
       console.log("Dados recebidos no backend:", req.body);
       console.log("Arquivos recebidos no backend:", req.files);
 
+      // Mapeando nomes de campos para o esperado pelo backend
+      req.body.construida = parseFloat(req.body.areaConstruida || 0);
+      req.body.terreno = parseFloat(req.body.areaTerreno || 0);
+
       // Validação com Zod
       const validData = produtoSchema.parse(req.body);
 
@@ -127,6 +131,7 @@ app.post(
     }
   }
 );
+
 
 // Inicializa o servidor
 app.listen(port, () => {

@@ -1,3 +1,4 @@
+// Backend: server.js
 import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
 import express from "express";
@@ -25,7 +26,7 @@ if (!fs.existsSync(uploadPath)) {
 }
 
 const corsOptions = {
-  origin: ["http://localhost:3000", "https://imobiliaria-dave.onrender.com/"],
+  origin: ["http://localhost:3000", "https://imobiliaria-dave.onrender.com"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
@@ -43,11 +44,11 @@ const produtoSchema = z.object({
   quartos: z.number().int().min(0),
   banheiros: z.number().int().min(0),
   garagem: z.number().int().min(0),
-  preco: z.number().int().min(0),
+  preco: z.number().min(0),
   localizacao: z.string(),
   tipo: z.string(),
-  areaConstruida: z.number().int().min(0),
-  areaTerreno: z.number().int().min(0),
+  construida: z.number().int().min(0),
+  terreno: z.number().int().min(0),
   conteudoAdicional: z.string().optional(),
 });
 
@@ -62,6 +63,14 @@ const localUpload = multer({
       cb(null, uniqueName);
     },
   }),
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/png"];
+    if (!allowedTypes.includes(file.mimetype)) {
+      return cb(new Error("Formato de arquivo não suportado"), false);
+    }
+    cb(null, true);
+  },
+  limits: { fileSize: 5 * 1024 * 1024 }, // Limite de 5MB por arquivo
 });
 
 // Endpoint para listar todos os produtos
@@ -95,31 +104,18 @@ app.post(
       console.log("Dados recebidos no backend:", req.body);
       console.log("Arquivos recebidos no backend:", req.files);
 
-      // Validação e fallback para valores padrão
-      const camposNumericos = [
-        "quartos",
-        "banheiros",
-        "garagem",
-        "preco",
-        "areaConstruida",
-        "areaTerreno",
-      ];
-      camposNumericos.forEach((campo) => {
-        req.body[campo] = parseInt(req.body[campo], 10) || 0; // Converte para número inteiro ou define como 0
-      });
-
       // Validação com Zod
-      produtoSchema.parse(req.body);
+      const validData = produtoSchema.parse(req.body);
 
-      const data = {
-        ...req.body,
-        ...Object.fromEntries(
-          Object.entries(req.files || {}).map(([key, files]) => [
-            key,
-            `${req.protocol}://${req.get("host")}/uploads/${files[0].filename}`,
-          ])
-        ),
-      };
+      // Construção dos dados do produto
+      const fotos = Object.fromEntries(
+        Object.entries(req.files || {}).map(([key, files]) => [
+          key,
+          `${req.protocol}://${req.get("host")}/uploads/${files[0].filename}`,
+        ])
+      );
+
+      const data = { ...validData, ...fotos };
 
       console.log("Dados sendo enviados para o Prisma:", data);
 

@@ -1,12 +1,12 @@
-import { PrismaClient } from '@prisma/client';
-import dotenv from 'dotenv';
-import express from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import cors from 'cors';
-import { fileURLToPath } from 'url';
-import { z } from 'zod';
+import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
+import express from "express";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import cors from "cors";
+import { fileURLToPath } from "url";
+import { z } from "zod";
 
 dotenv.config();
 
@@ -19,22 +19,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configuração da pasta local para upload
-const uploadPath = path.join(__dirname, 'uploads');
+const uploadPath = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
 
 const corsOptions = {
-  origin: ['http://localhost:3000', 'https://imobiliaria-dave.onrender.com/'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: ["http://localhost:3000", "https://imobiliaria-dave.onrender.com/"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors(corsOptions));
-app.use('/uploads', express.static(uploadPath));
+app.use("/uploads", express.static(uploadPath));
 
 // Validação do esquema
 const produtoSchema = z.object({
@@ -46,6 +46,9 @@ const produtoSchema = z.object({
   preco: z.number().int().min(0),
   localizacao: z.string(),
   tipo: z.string(),
+  areaConstruida: z.number().int().min(0),
+  areaTerreno: z.number().int().min(0),
+  conteudoAdicional: z.string().optional(),
 });
 
 // Configuração do multer para salvar arquivos localmente
@@ -62,38 +65,45 @@ const localUpload = multer({
 });
 
 // Endpoint para listar todos os produtos
-app.get('/produtos', async (req, res) => {
+app.get("/produtos", async (req, res) => {
   try {
     const produtos = await prisma.produto.findMany();
     res.status(200).json(produtos);
   } catch (error) {
-    console.error('Erro ao buscar produtos:', error);
-    res.status(500).json({ error: error.message || 'Erro ao buscar produtos.' });
+    console.error("Erro ao buscar produtos:", error);
+    res.status(500).json({ error: error.message || "Erro ao buscar produtos." });
   }
 });
 
 // Endpoint para criar produtos com upload local
 app.post(
-  '/produtos',
+  "/produtos",
   localUpload.fields([
-    { name: 'foto01', maxCount: 1 },
-    { name: 'foto02', maxCount: 1 },
-    { name: 'foto03', maxCount: 1 },
-    { name: 'foto04', maxCount: 1 },
-    { name: 'foto05', maxCount: 1 },
-    { name: 'foto06', maxCount: 1 },
-    { name: 'foto07', maxCount: 1 },
-    { name: 'foto08', maxCount: 1 },
-    { name: 'foto09', maxCount: 1 },
-    { name: 'foto10', maxCount: 1 },
+    { name: "foto01", maxCount: 1 },
+    { name: "foto02", maxCount: 1 },
+    { name: "foto03", maxCount: 1 },
+    { name: "foto04", maxCount: 1 },
+    { name: "foto05", maxCount: 1 },
+    { name: "foto06", maxCount: 1 },
+    { name: "foto07", maxCount: 1 },
+    { name: "foto08", maxCount: 1 },
+    { name: "foto09", maxCount: 1 },
+    { name: "foto10", maxCount: 1 },
   ]),
   async (req, res) => {
     try {
-      console.log('Dados recebidos no backend:', req.body);
-      console.log('Arquivos recebidos no backend:', req.files);
+      console.log("Dados recebidos no backend:", req.body);
+      console.log("Arquivos recebidos no backend:", req.files);
 
       // Validação e fallback para valores padrão
-      const camposNumericos = ['quartos', 'banheiros', 'garagem', 'preco'];
+      const camposNumericos = [
+        "quartos",
+        "banheiros",
+        "garagem",
+        "preco",
+        "areaConstruida",
+        "areaTerreno",
+      ];
       camposNumericos.forEach((campo) => {
         req.body[campo] = parseInt(req.body[campo], 10) || 0; // Converte para número inteiro ou define como 0
       });
@@ -106,17 +116,18 @@ app.post(
         ...Object.fromEntries(
           Object.entries(req.files || {}).map(([key, files]) => [
             key,
-            `${req.protocol}://${req.get('host')}/uploads/${files[0].filename}`,
+            `${req.protocol}://${req.get("host")}/uploads/${files[0].filename}`,
           ])
         ),
       };
-      console.log('Dados sendo enviados para o Prisma:', data);
+
+      console.log("Dados sendo enviados para o Prisma:", data);
 
       const produto = await prisma.produto.create({ data });
       res.status(201).json(produto);
     } catch (error) {
-      console.error('Erro ao criar produto:', error);
-      res.status(400).json({ error: error.message || 'Erro ao criar produto.' });
+      console.error("Erro ao criar produto:", error);
+      res.status(400).json({ error: error.message || "Erro ao criar produto." });
     }
   }
 );

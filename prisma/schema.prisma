@@ -12,24 +12,34 @@ model Produto {
   id                String    @id @default(auto()) @map("_id") @db.ObjectId
   areaConstruida    Int
   areaTerreno       Int
-  banheiros         Int       // Alterado para Int, compatível com MongoDB
+  banheiros         BigInt
   conteudoAdicional String
-  createdAt         DateTime  @default(now()) // Adicionado valor padrão
+  createdAt         DateTime? @db.Date
   descricao         String
-  foto01            String?   // Alterado para String?, caso sejam URLs
-  foto02            String?
-  foto03            String?
-  foto04            String?
-  foto05            String?
-  foto06            String?
-  foto07            String?
-  foto08            String?
-  foto09            String?
-  foto10            String?
-  garagem           Int       // Alterado para Int
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  foto01            Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  foto02            Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  foto03            Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  foto04            Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  foto05            Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  foto06            Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  foto07            Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  foto08            Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  foto09            Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  foto10            Json?
+  garagem           BigInt
   localizacao       String
   preco             Float
-  quartos           Int       // Alterado para Int
+  quartos           BigInt
   tipo              String
   titulo            String
 }

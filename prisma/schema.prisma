@@ -8,28 +8,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+
 model Produto {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  titulo          String
-  descricao       String
-  quartos         Int
-  banheiros       Int
-  garagem         Int
-  preco           Float
-  localizacao     String
-  tipo            String
-  construida      Int
-  terreno         Int
-  conteudoAdicional String?
-  foto01          String?
-  foto02          String?
-  foto03          String?
-  foto04          String?
-  foto05          String?
-  foto06          String?
-  foto07          String?
-  foto08          String?
-  foto09          String?
-  foto10          String?
-  createdat       DateTime @default(now())
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  areaConstruida    Int
+  areaTerreno       Int
+  banheiros         Int
+  construida        Int
+  conteudoAdicional String
+  createdAt         DateTime @default(now())
+  descricao         String
+  foto01            String?
+  foto02            String?
+  foto03            String?
+  foto04            String?
+  foto05            String?
+  foto06            String?
+  foto07            String?
+  foto08            String?
+  foto09            String?
+  foto10            String?
+  garagem           Int
+  localizacao       String
+  preco             Float
+  quartos           Int
+  terreno           Int
+  tipo              String
+  titulo            String
 }

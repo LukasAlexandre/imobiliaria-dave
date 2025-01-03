@@ -98,13 +98,15 @@ app.post(
       // Mapeando os campos para o nome esperado
       const parsedBody = {
         ...req.body,
-  construida: parseFloat(req.body.areaConstruida) || 0, // Aqui o nome é diferente
-  terreno: parseFloat(req.body.areaTerreno) || 0,       // Aqui o nome é diferente
+        construida: parseFloat(req.body.areaConstruida) || 0, // Mapeando corretamente
+        terreno: parseFloat(req.body.areaTerreno) || 0,       // Mapeando corretamente
         quartos: parseInt(req.body.quartos) || 0,
         banheiros: parseInt(req.body.banheiros) || 0,
         garagem: parseInt(req.body.garagem) || 0,
         preco: parseFloat(req.body.preco) || 0,
+        localizacao: req.body.localizacao || "", // Adicionando localizacao
       };
+      
 
       console.log("Dados processados para validação:", parsedBody);
 

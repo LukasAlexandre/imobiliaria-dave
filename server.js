@@ -1,4 +1,3 @@
-// Backend: server.js
 import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
 import express from "express";
@@ -63,14 +62,7 @@ const localUpload = multer({
       cb(null, uniqueName);
     },
   }),
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png"];
-    if (!allowedTypes.includes(file.mimetype)) {
-      return cb(new Error("Formato de arquivo não suportado"), false);
-    }
-    cb(null, true);
-  },
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limite de 5MB por arquivo
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
 // Endpoint para listar todos os produtos
@@ -102,16 +94,21 @@ app.post(
   async (req, res) => {
     try {
       console.log("Dados recebidos no backend:", req.body);
-      console.log("Arquivos recebidos no backend:", req.files);
 
-      // Mapeando nomes de campos para o esperado pelo backend
-      req.body.construida = parseFloat(req.body.areaConstruida || 0);
-      req.body.terreno = parseFloat(req.body.areaTerreno || 0);
+      // Convertendo os campos numéricos corretamente
+      const parsedBody = {
+        ...req.body,
+        quartos: parseInt(req.body.quartos),
+        banheiros: parseInt(req.body.banheiros),
+        garagem: parseInt(req.body.garagem),
+        preco: parseFloat(req.body.preco),
+        construida: parseInt(req.body.construida),
+        terreno: parseInt(req.body.terreno),
+      };
 
       // Validação com Zod
-      const validData = produtoSchema.parse(req.body);
+      const validData = produtoSchema.parse(parsedBody);
 
-      // Construção dos dados do produto
       const fotos = Object.fromEntries(
         Object.entries(req.files || {}).map(([key, files]) => [
           key,
@@ -131,7 +128,6 @@ app.post(
     }
   }
 );
-
 
 // Inicializa o servidor
 app.listen(port, () => {

@@ -9,37 +9,26 @@ datasource db {
 }
 
 model Produto {
-  id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  areaConstruida    Int
-  areaTerreno       Int
-  banheiros         BigInt
-  conteudoAdicional String
-  createdAt         DateTime? @db.Date
-  descricao         String
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto01            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto02            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto03            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto04            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto05            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto06            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto07            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto08            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto09            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto10            Json?
-  garagem           BigInt
-  localizacao       String
-  preco             Float
-  quartos           BigInt
-  tipo              String
-  titulo            String
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  areaConstruida Int
+  areaTerreno    Int
+  banheiros      Int
+  descricao      String
+  titulo         String
+  preco          Float
+  localizacao    String
+  tipo           String
+  garagem        Int
+  quartos        Int
+  createdAt      DateTime @default(now())
+  foto01         String?
+  foto02         String?
+  foto03         String?
+  foto04         String?
+  foto05         String?
+  foto06         String?
+  foto07         String?
+  foto08         String?
+  foto09         String?
+  foto10         String?
 }

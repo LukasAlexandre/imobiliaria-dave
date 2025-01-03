@@ -95,7 +95,7 @@ app.post(
     try {
       console.log("Dados recebidos no backend:", req.body);
 
-      // Mapeando os campos do body para os nomes corretos
+      // Mapeando os campos para o nome esperado
       const parsedBody = {
         ...req.body,
         construida: parseFloat(req.body.areaConstruida) || 0,
@@ -105,6 +105,8 @@ app.post(
         garagem: parseInt(req.body.garagem) || 0,
         preco: parseFloat(req.body.preco) || 0,
       };
+
+      console.log("Dados processados para validação:", parsedBody);
 
       // Validação com Zod
       const validData = produtoSchema.parse(parsedBody);
@@ -124,10 +126,15 @@ app.post(
       res.status(201).json(produto);
     } catch (error) {
       console.error("Erro ao criar produto:", error);
-      res.status(400).json({ error: error.errors || "Erro ao criar produto." });
+
+      // Retornar o erro detalhado
+      res.status(400).json({
+        error: error.errors || error.message || "Erro ao criar produto.",
+      });
     }
   }
 );
+
 
 
 // Inicializa o servidor

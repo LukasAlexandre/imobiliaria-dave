@@ -98,8 +98,8 @@ app.post(
       // Mapeando os campos para o nome esperado
       const parsedBody = {
         ...req.body,
-        construida: parseFloat(req.body.areaConstruida) || 0,
-        terreno: parseFloat(req.body.areaTerreno) || 0,
+  construida: parseFloat(req.body.areaConstruida) || 0, // Aqui o nome é diferente
+  terreno: parseFloat(req.body.areaTerreno) || 0,       // Aqui o nome é diferente
         quartos: parseInt(req.body.quartos) || 0,
         banheiros: parseInt(req.body.banheiros) || 0,
         garagem: parseInt(req.body.garagem) || 0,

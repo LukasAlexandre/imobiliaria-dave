@@ -1,45 +1,25 @@
-generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "windows", "debian-openssl-3.0.x"]
-}
-
-datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
-}
-
 model Produto {
   id                String    @id @default(auto()) @map("_id") @db.ObjectId
   areaConstruida    Int
   areaTerreno       Int
-  banheiros         BigInt
+  banheiros         Int       // Alterado para Int, compatível com MongoDB
   conteudoAdicional String
-  createdAt         DateTime? @db.Date
+  createdAt         DateTime  @default(now()) // Adicionado valor padrão
   descricao         String
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto01            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto02            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto03            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto04            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto05            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto06            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto07            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto08            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto09            Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  foto10            Json?
-  garagem           BigInt
+  foto01            String?   // Alterado para String?, caso sejam URLs
+  foto02            String?
+  foto03            String?
+  foto04            String?
+  foto05            String?
+  foto06            String?
+  foto07            String?
+  foto08            String?
+  foto09            String?
+  foto10            String?
+  garagem           Int       // Alterado para Int
   localizacao       String
   preco             Float
-  quartos           BigInt
+  quartos           Int       // Alterado para Int
   tipo              String
   titulo            String
 }

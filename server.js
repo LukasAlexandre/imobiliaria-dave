@@ -95,15 +95,15 @@ app.post(
     try {
       console.log("Dados recebidos no backend:", req.body);
 
-      // Convertendo os campos numéricos corretamente
+      // Mapeando os campos do body para os nomes corretos
       const parsedBody = {
         ...req.body,
-        quartos: parseInt(req.body.quartos),
-        banheiros: parseInt(req.body.banheiros),
-        garagem: parseInt(req.body.garagem),
-        preco: parseFloat(req.body.preco),
-        construida: parseInt(req.body.construida),
-        terreno: parseInt(req.body.terreno),
+        construida: parseFloat(req.body.areaConstruida) || 0,
+        terreno: parseFloat(req.body.areaTerreno) || 0,
+        quartos: parseInt(req.body.quartos) || 0,
+        banheiros: parseInt(req.body.banheiros) || 0,
+        garagem: parseInt(req.body.garagem) || 0,
+        preco: parseFloat(req.body.preco) || 0,
       };
 
       // Validação com Zod
@@ -124,10 +124,11 @@ app.post(
       res.status(201).json(produto);
     } catch (error) {
       console.error("Erro ao criar produto:", error);
-      res.status(400).json({ error: error.message || "Erro ao criar produto." });
+      res.status(400).json({ error: error.errors || "Erro ao criar produto." });
     }
   }
 );
+
 
 // Inicializa o servidor
 app.listen(port, () => {

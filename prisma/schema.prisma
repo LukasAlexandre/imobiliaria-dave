@@ -11,26 +11,26 @@ datasource db {
 
 
 model Produto {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  banheiros         Int
-  descricao         String
-  foto01            String?
-  foto02            String?
-  foto03            String?
-  foto04            String?
-  foto05            String?
-  foto06            String?
-  foto07            String?
-  foto08            String?
-  foto09            String?
-  foto10            String?
-  garagem           Int
-  localizacao       String
-  preco             Float
-  quartos           Int
-  tipo              String
-  titulo            String
-  metragemCasa      Int?   // Novo campo
-  metragemTerreno   Int?   // Novo campo
-  observacao        String? // Novo campo
+  id              String @id @default(auto()) @map("_id") @db.ObjectId
+  banheiros       Int
+  descricao       String
+  foto01          String?
+  foto02          String?
+  foto03          String?
+  foto04          String?
+  foto05          String?
+  foto06          String?
+  foto07          String?
+  foto08          String?
+  foto09          String?
+  foto10          String?
+  garagem         Int
+  localizacao     String
+  preco           Float
+  quartos         Int
+  tipo            String
+  titulo          String
+  metragemCasa    Int?    // Adicionado manualmente
+  metragemTerreno Int?    // Adicionado manualmente
+  observacao      String? // Adicionado manualmente
 }

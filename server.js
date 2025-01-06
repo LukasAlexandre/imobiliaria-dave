@@ -46,7 +46,6 @@ const produtoSchema = z.object({
   preco: z.number().min(0),
   localizacao: z.string(),
   tipo: z.string(),
-  construida: z.number().int().min(0),
   terreno: z.number().int().min(0),
   conteudoAdicional: z.string().optional(),
 });
@@ -98,7 +97,6 @@ app.post(
       // Mapeando os campos para o nome esperado
       const parsedBody = {
         ...req.body,
-        construida: parseFloat(req.body.areaConstruida) || 0, // Mapeando corretamente
         terreno: parseFloat(req.body.areaTerreno) || 0,       // Mapeando corretamente
         quartos: parseInt(req.body.quartos) || 0,
         banheiros: parseInt(req.body.banheiros) || 0,

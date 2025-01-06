@@ -46,10 +46,11 @@ const produtoSchema = z.object({
   preco: z.number().min(0),
   localizacao: z.string(),
   tipo: z.string(),
-  metragemCasa: z.number().int().min(0),
-  metragemTerreno: z.number().int().min(0),
+  metragemCasa: z.number().int().min(0).optional(), // Agora é opcional
+  metragemTerreno: z.number().int().min(0).optional(), // Agora é opcional
   observacao: z.string().optional(),
 });
+
 
 
 // Configuração do multer para salvar arquivos localmente
@@ -69,7 +70,9 @@ const localUpload = multer({
 // Endpoint para listar todos os produtos
 app.get("/produtos", async (req, res) => {
   try {
-    const produtos = await prisma.produto.findMany();
+    const produtos = await prisma.produto.findMany({
+      orderBy: { id: "desc" }, // Agora os produtos são ordenados pelo ID numérico
+    });
     res.status(200).json(produtos);
   } catch (error) {
     console.error("Erro ao buscar produtos:", error);
@@ -78,67 +81,36 @@ app.get("/produtos", async (req, res) => {
 });
 
 // Endpoint para criar produtos com upload local
-app.post(
-  "/produtos",
-  localUpload.fields([
-    { name: "foto01", maxCount: 1 },
-    { name: "foto02", maxCount: 1 },
-    { name: "foto03", maxCount: 1 },
-    { name: "foto04", maxCount: 1 },
-    { name: "foto05", maxCount: 1 },
-    { name: "foto06", maxCount: 1 },
-    { name: "foto07", maxCount: 1 },
-    { name: "foto08", maxCount: 1 },
-    { name: "foto09", maxCount: 1 },
-    { name: "foto10", maxCount: 1 },
-  ]),
-  async (req, res) => {
-    try {
-      console.log("Dados recebidos no backend:", req.body);
+app.post("/produtos", localUpload.fields([...]), async (req, res) => {
+  try {
+    console.log("📩 Dados recebidos:", req.body);
 
-      // Mapeando os campos para o nome esperado
-      const parsedBody = {
-        ...req.body,
-        quartos: parseInt(req.body.quartos) || 0,
-        banheiros: parseInt(req.body.banheiros) || 0,
-        garagem: parseInt(req.body.garagem) || 0,
-        preco: parseFloat(req.body.preco) || 0,
-        localizacao: req.body.localizacao || "", // Adicionando localizacao
-        metragemCasa: parseInt(req.body.metragemCasa) || 0, // Novo campo
-        metragemTerreno: parseInt(req.body.metragemTerreno) || 0, // Novo campo
-        observacao: req.body.observacao || "", // Novo campo
-      };
-      
-      
+    // Validação com Zod
+    const validData = produtoSchema.parse(parsedBody);
 
-      console.log("Dados processados para validação:", parsedBody);
+    // Tratamento das fotos
+    const fotos = Object.fromEntries(
+      Object.entries(req.files || {}).map(([key, files]) => [
+        key,
+        `${req.protocol}://${req.get("host")}/uploads/${files[0].filename}`,
+      ])
+    );
 
-      // Validação com Zod
-      const validData = produtoSchema.parse(parsedBody);
+    const data = { ...validData, ...fotos };
 
-      const fotos = Object.fromEntries(
-        Object.entries(req.files || {}).map(([key, files]) => [
-          key,
-          `${req.protocol}://${req.get("host")}/uploads/${files[0].filename}`,
-        ])
-      );
+    console.log("📤 Enviando para Prisma:", data);
 
-      const data = { ...validData, ...fotos };
+    const produto = await prisma.produto.create({ data });
+    res.status(201).json(produto);
+  } catch (error) {
+    console.error("❌ Erro ao criar produto:", error);
 
-      console.log("Dados sendo enviados para o Prisma:", data);
-
-      const produto = await prisma.produto.create({ data });
-      res.status(201).json(produto);
-    } catch (error) {
-      console.error("Erro ao criar produto:", error);
-
-      // Retornar o erro detalhado
-      res.status(400).json({
-        error: error.errors || error.message || "Erro ao criar produto.",
-      });
-    }
+    res.status(400).json({
+      error: error instanceof z.ZodError ? error.errors : error.message || "Erro ao criar produto.",
+    });
   }
-);
+});
+
 
 
 

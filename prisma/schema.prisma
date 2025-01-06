@@ -13,6 +13,7 @@ datasource db {
 model Produto {
   id                String   @id @default(auto()) @map("_id") @db.ObjectId
   banheiros         Int
+  banheiross        Int
   descricao         String
   foto01            String?
   foto02            String?
@@ -30,5 +31,4 @@ model Produto {
   quartos           Int
   tipo              String
   titulo            String
-  casa            String
 }

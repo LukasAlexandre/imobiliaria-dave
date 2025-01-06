@@ -12,7 +12,6 @@ datasource db {
 
 model Produto {
   id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  terreno           Int? // Altere para este nome
   banheiros         Int
   conteudoAdicional String
   descricao         String

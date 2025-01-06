@@ -16,7 +16,6 @@ model Produto {
   terreno           Int? // Altere para este nome
   banheiros         Int
   conteudoAdicional String
-  createdAt         DateTime @default(now())
   descricao         String
   foto01            String?
   foto02            String?

@@ -45,8 +45,7 @@ const produtoSchema = z.object({
   garagem: z.number().int().min(0),
   preco: z.number().min(0),
   localizacao: z.string(),
-  tipo: z.string(),
-  conteudoAdicional: z.string().optional(),
+  tipo: z.string()
 });
 
 // Configuração do multer para salvar arquivos localmente
@@ -101,7 +100,6 @@ app.post(
         garagem: parseInt(req.body.garagem) || 0,
         preco: parseFloat(req.body.preco) || 0,
         localizacao: req.body.localizacao || "", // Adicionando localizacao
-        conteudoAdicional: req.body.conteudoAdicional || "",
       };
       
 

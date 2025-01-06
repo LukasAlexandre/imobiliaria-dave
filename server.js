@@ -101,6 +101,7 @@ app.post(
         garagem: parseInt(req.body.garagem) || 0,
         preco: parseFloat(req.body.preco) || 0,
         localizacao: req.body.localizacao || "", // Adicionando localizacao
+        conteudoAdicional: req.body.conteudoAdicional || "",
       };
       
 

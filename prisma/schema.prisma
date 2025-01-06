@@ -30,4 +30,5 @@ model Produto {
   quartos           Int
   tipo              String
   titulo            String
+  casa            String
 }

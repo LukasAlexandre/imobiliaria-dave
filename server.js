@@ -42,7 +42,7 @@ const produtoSchema = z.object({
   descricao: z.string(),
   quartos: z.number().int().min(0),
   banheiros: z.number().int().min(0),
-  banheiross: z.number().int().min(0),
+  bane: z.number().int().min(0),
   garagem: z.number().int().min(0),
   preco: z.number().min(0),
   localizacao: z.string(),
@@ -98,7 +98,7 @@ app.post(
         ...req.body,
         quartos: parseInt(req.body.quartos) || 0,
         banheiros: parseInt(req.body.banheiros) || 0,
-        banheiross: parseInt(req.body.banheiros) || 0,
+        bane: parseInt(req.body.banheiros) || 0,
         garagem: parseInt(req.body.garagem) || 0,
         preco: parseFloat(req.body.preco) || 0,
         localizacao: req.body.localizacao || "", // Adicionando localizacao

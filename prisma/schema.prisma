@@ -12,9 +12,12 @@ datasource db {
 
 model Produto {
   id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  banheiros         Int
-  bane       Int
+  titulo            String
   descricao         String
+  banheiros         Int
+  metragemCasa      Int?
+  metragemTerreno   Int?
+  observacao        String?
   foto01            String?
   foto02            String?
   foto03            String?
@@ -30,5 +33,4 @@ model Produto {
   preco             Float
   quartos           Int
   tipo              String
-  titulo            String
 }

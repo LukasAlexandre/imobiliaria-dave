@@ -42,12 +42,15 @@ const produtoSchema = z.object({
   descricao: z.string(),
   quartos: z.number().int().min(0),
   banheiros: z.number().int().min(0),
-  bane: z.number().int().min(0),
   garagem: z.number().int().min(0),
   preco: z.number().min(0),
   localizacao: z.string(),
   tipo: z.string(),
+  metragemCasa: z.number().int().min(0),
+  metragemTerreno: z.number().int().min(0),
+  observacao: z.string().optional(),
 });
+
 
 // Configuração do multer para salvar arquivos localmente
 const localUpload = multer({
@@ -98,11 +101,14 @@ app.post(
         ...req.body,
         quartos: parseInt(req.body.quartos) || 0,
         banheiros: parseInt(req.body.banheiros) || 0,
-        bane: parseInt(req.body.banheiros) || 0,
         garagem: parseInt(req.body.garagem) || 0,
         preco: parseFloat(req.body.preco) || 0,
         localizacao: req.body.localizacao || "", // Adicionando localizacao
+        metragemCasa: parseInt(req.body.metragemCasa) || 0, // Novo campo
+        metragemTerreno: parseInt(req.body.metragemTerreno) || 0, // Novo campo
+        observacao: req.body.observacao || "", // Novo campo
       };
+      
       
 
       console.log("Dados processados para validação:", parsedBody);

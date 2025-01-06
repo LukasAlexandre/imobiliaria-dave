@@ -30,7 +30,7 @@ model Produto {
   quartos           Int
   tipo              String
   titulo            String
-  metragemCasa      Int      // Novo campo
-  metragemTerreno   Int      // Novo campo
-  observacao        String   // Novo campo
+  metragemCasa      Int?   // Novo campo
+  metragemTerreno   Int?   // Novo campo
+  observacao        String? // Novo campo
 }

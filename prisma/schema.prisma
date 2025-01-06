@@ -5,30 +5,30 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL")  // Certifique-se de que esta linha está correta
 }
 
-model produto {
-  id              Int     @id @default(autoincrement())
-  titulo          String  @db.VarChar(255)
-  descricao       String  @db.Text
+model Produto {
+  id              Int     @id @default(autoincrement()) 
+  titulo          String
+  descricao       String
   quartos         Int
   banheiros       Int
   garagem         Int
-  preco           Decimal @db.Decimal(10, 2)
-  localizacao     String  @db.VarChar(255)
-  tipo            String  @db.VarChar(255)
+  preco           Float
+  localizacao     String
+  tipo            String
   metragemCasa    Int?
   metragemTerreno Int?
-  observacao      String? @db.Text
-  foto01          String? @db.VarChar(255)
-  foto02          String? @db.VarChar(255)
-  foto03          String? @db.VarChar(255)
-  foto04          String? @db.VarChar(255)
-  foto05          String? @db.VarChar(255)
-  foto06          String? @db.VarChar(255)
-  foto07          String? @db.VarChar(255)
-  foto08          String? @db.VarChar(255)
-  foto09          String? @db.VarChar(255)
-  foto10          String? @db.VarChar(255)
+  observacao      String?
+  foto01          String?
+  foto02          String?
+  foto03          String?
+  foto04          String?
+  foto05          String?
+  foto06          String?
+  foto07          String?
+  foto08          String?
+  foto09          String?
+  foto10          String?
 }

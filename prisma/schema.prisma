@@ -4,12 +4,12 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"   // 🟢 Confirme que está "mysql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model Produto {
-  id              Int     @id @default(autoincrement()) 
+  id              Int     @id @default(autoincrement())
   titulo          String
   descricao       String
   quartos         Int

@@ -3,16 +3,13 @@ generator client {
   binaryTargets = ["native"]
 }
 
-
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-
-
 model Produto {
-  id              Int     @id @default(autoincrement()) 
+  id              Int     @id @default(autoincrement())
   titulo          String
   descricao       String
   quartos         Int

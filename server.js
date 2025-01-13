@@ -39,12 +39,16 @@ app.use("/uploads", express.static(uploadPath));
 // Teste de conexão com o banco
 (async () => {
   try {
+    console.log("🔄 Tentando conectar ao banco...");
     await prisma.$connect();
     console.log("✅ Conectado ao banco MySQL com Prisma!");
   } catch (error) {
     console.error("❌ Erro ao conectar ao banco:", error);
+    console.error("🛠️ Verifique se o banco está online e se a DATABASE_URL está correta.");
+    process.exit(1);  // Encerra o processo para evitar falhas em produção
   }
 })();
+
 
 // Validação do esquema
 const produtoSchema = z.object({

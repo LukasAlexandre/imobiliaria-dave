@@ -4,8 +4,8 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")  // Certifique-se de que esta linha está correta
+  provider = "mysql"   // 🟢 Confirme que está como "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Produto {

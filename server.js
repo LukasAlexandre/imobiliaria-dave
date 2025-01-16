@@ -45,10 +45,9 @@ app.use("/uploads", express.static(uploadPath));
   } catch (error) {
     console.error("❌ Erro ao conectar ao banco:", error);
     console.error("🛠️ Verifique se o banco está online e se a DATABASE_URL está correta.");
-    process.exit(1);  // Encerra o processo para evitar falhas em produção
+    process.exit(1); // Encerra o processo para evitar falhas em produção
   }
 })();
-
 
 // Validação do esquema
 const produtoSchema = z.object({
@@ -75,6 +74,73 @@ app.get("/produtos", async (req, res) => {
   } catch (error) {
     console.error("Erro ao buscar produtos:", error);
     res.status(500).json({ error: "Erro ao buscar produtos." });
+  }
+});
+
+// Rota POST para criar um novo produto
+app.post("/produtos", async (req, res) => {
+  try {
+    const dadosValidados = produtoSchema.parse(req.body);
+
+    const novoProduto = await prisma.produto.create({
+      data: dadosValidados,
+    });
+
+    res.status(201).json(novoProduto);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error("Erro de validação:", error.errors);
+      res.status(400).json({ error: "Dados inválidos.", detalhes: error.errors });
+    } else {
+      console.error("Erro ao criar produto:", error);
+      res.status(500).json({ error: "Erro ao criar produto." });
+    }
+  }
+});
+
+// Rota PUT para atualizar um produto existente
+app.put("/produtos/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const dadosValidados = produtoSchema.parse(req.body);
+
+    const produtoAtualizado = await prisma.produto.update({
+      where: { id: parseInt(id, 10) },
+      data: dadosValidados,
+    });
+
+    res.status(200).json(produtoAtualizado);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error("Erro de validação:", error.errors);
+      res.status(400).json({ error: "Dados inválidos.", detalhes: error.errors });
+    } else if (error.code === "P2025") {
+      res.status(404).json({ error: "Produto não encontrado." });
+    } else {
+      console.error("Erro ao atualizar produto:", error);
+      res.status(500).json({ error: "Erro ao atualizar produto." });
+    }
+  }
+});
+
+// Rota DELETE para excluir um produto
+app.delete("/produtos/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await prisma.produto.delete({
+      where: { id: parseInt(id, 10) },
+    });
+
+    res.status(200).json({ message: "Produto excluído com sucesso." });
+  } catch (error) {
+    if (error.code === "P2025") {
+      res.status(404).json({ error: "Produto não encontrado." });
+    } else {
+      console.error("Erro ao excluir produto:", error);
+      res.status(500).json({ error: "Erro ao excluir produto." });
+    }
   }
 });
 

@@ -61,7 +61,7 @@ app.use("/uploads", express.static(uploadPath));
   }
 })();
 
-// Validação do esquema
+// Validação do esquema com Zod
 const produtoSchema = z.object({
   titulo: z.string(),
   descricao: z.string(),
@@ -76,7 +76,6 @@ const produtoSchema = z.object({
 });
 
 // Método POST para salvar produto
-// Método POST para salvar produto
 app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
   try {
     // Se os arquivos foram enviados, geramos URLs para os mesmos
@@ -86,6 +85,10 @@ app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
     if (fotosUrls.length === 0) {
       return res.status(400).json({ message: "É necessário enviar pelo menos uma foto." });
     }
+
+    // Log para depuração
+    console.log("Arquivos recebidos:", req.files);
+    console.log("Corpo da requisição:", req.body);
 
     // Validação dos dados recebidos com Zod
     const produtoData = produtoSchema.parse({

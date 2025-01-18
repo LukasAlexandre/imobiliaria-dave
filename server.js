@@ -71,71 +71,55 @@ const produtoSchema = z.object({
   preco: z.number().min(0),
   localizacao: z.string(),
   tipo: z.string(),
-  metragemCasa: z.number().int().min(0).nullable().optional(),
-  metragemTerreno: z.number().int().min(0).nullable().optional(),
-  observacao: z.string().nullable().optional(),
-  foto01: z.string().nullable().optional(),
-  foto02: z.string().nullable().optional(),
-  foto03: z.string().nullable().optional(),
-  foto04: z.string().nullable().optional(),
-  foto05: z.string().nullable().optional(),
-  foto06: z.string().nullable().optional(),
-  foto07: z.string().nullable().optional(),
-  foto08: z.string().nullable().optional(),
-  foto09: z.string().nullable().optional(),
-  foto10: z.string().nullable().optional(),
+  metragemCasa: z.number().int().min(0),
+  fotos: z.array(z.string().url()).min(1).max(10), // Fotos como array de URLs
 });
 
-// Endpoint para listar produtos
-app.get("/produtos", async (req, res) => {
-  try {
-    const produtos = await prisma.produto.findMany({
-      orderBy: { id: "desc" },
-    });
-    res.status(200).json(produtos);
-  } catch (error) {
-    console.error("Erro ao listar produtos:", error);
-    res.status(500).json({ message: "Erro ao listar produtos" });
-  }
-});
-
-// Endpoint para criar novo produto
+// Método POST para salvar produto
 app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
   try {
-    // Verifique se as fotos foram enviadas corretamente
-    const fotos = req.files?.map((file) => file.filename);
-
-    // Validação do corpo da requisição
+    // Validação dos dados recebidos com Zod
     const produtoData = produtoSchema.parse({
       ...req.body,
-      foto01: fotos?.[0] || null,
-      foto02: fotos?.[1] || null,
-      foto03: fotos?.[2] || null,
-      foto04: fotos?.[3] || null,
-      foto05: fotos?.[4] || null,
-      foto06: fotos?.[5] || null,
-      foto07: fotos?.[6] || null,
-      foto08: fotos?.[7] || null,
-      foto09: fotos?.[8] || null,
-      foto10: fotos?.[9] || null,
+      fotos: req.files ? req.files.map(file => `/uploads/${file.filename}`) : [],
     });
 
-    // Criando o produto no banco de dados
-    const produto = await prisma.produto.create({
+    // Salvar no banco de dados
+    const novoProduto = await prisma.produto.create({
       data: produtoData,
     });
 
-    res.status(201).json(produto);
+    res.status(201).json(novoProduto);
   } catch (error) {
     console.error("Erro ao salvar produto:", error);
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ message: error.errors });
-    }
-    res.status(500).json({ message: "Erro ao salvar produto" });
+    res.status(400).json({ message: error.errors || error.message });
   }
 });
 
-// Iniciando o servidor
+// Exemplo de dados para testar o método POST (3 URLs de imagens)
+const exemploDeDados = {
+  titulo: "Casa Moderna",
+  descricao: "Casa com 3 quartos e excelente localização.",
+  quartos: 3,
+  banheiros: 2,
+  garagem: 1,
+  preco: 500000,
+  localizacao: "Rua Exemplo, 123",
+  tipo: "Venda",
+  metragemCasa: 120,
+  fotos: [
+    "https://exemplo.com/imagem1.jpg",
+    "https://exemplo.com/imagem2.jpg",
+    "https://exemplo.com/imagem3.jpg",
+  ],
+};
+
+// Rota para testar o envio de dados
+app.get("/testar-produto", (req, res) => {
+  res.json(exemploDeDados);
+});
+
+// Inicializando o servidor
 app.listen(port, () => {
   console.log(`Servidor rodando na porta ${port}`);
 });

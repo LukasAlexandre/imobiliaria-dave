@@ -74,7 +74,16 @@ const produtoSchema = z.object({
   metragemCasa: z.number().int().min(0).nullable().optional(),
   metragemTerreno: z.number().int().min(0).nullable().optional(),
   observacao: z.string().nullable().optional(),
-  fotos: z.array(z.string()).optional(), // Para lidar com as fotos
+  foto01: z.string().nullable().optional(),
+  foto02: z.string().nullable().optional(),
+  foto03: z.string().nullable().optional(),
+  foto04: z.string().nullable().optional(),
+  foto05: z.string().nullable().optional(),
+  foto06: z.string().nullable().optional(),
+  foto07: z.string().nullable().optional(),
+  foto08: z.string().nullable().optional(),
+  foto09: z.string().nullable().optional(),
+  foto10: z.string().nullable().optional(),
 });
 
 // Endpoint para listar produtos
@@ -85,103 +94,33 @@ app.get("/produtos", async (req, res) => {
     });
     res.status(200).json(produtos);
   } catch (error) {
-    console.error("Erro ao buscar produtos:", error);
-    res.status(500).json({ error: "Erro ao buscar produtos." });
+    console.error("Erro ao listar produtos:", error);
+    res.status(500).json({ message: "Erro ao listar produtos" });
   }
 });
 
-app.post("/produtos", upload.array('fotos', 10), async (req, res) => {
+// Endpoint para criar novo produto
+app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
   try {
-    // Garantir que os campos numéricos são convertidos corretamente
-    req.body.quartos = Number(req.body.quartos);
-    req.body.banheiros = Number(req.body.banheiros);
-    req.body.garagem = Number(req.body.garagem);
-    req.body.preco = Number(req.body.preco);
-    req.body.metragemCasa = req.body.metragemCasa ? Number(req.body.metragemCasa) : null;
-    req.body.metragemTerreno = req.body.metragemTerreno ? Number(req.body.metragemTerreno) : null;
+    // Validação do corpo da requisição
+    const produtoData = produtoSchema.parse({
+      ...req.body,
+      fotos: req.files?.map((file) => file.filename),
+    });
 
-    // Valida os dados do produto (exceto fotos)
-    const dadosValidados = produtoSchema.omit({ fotos: true }).parse(req.body);
-
-    // Agora, o resto do código para salvar o produto vai aqui
+    // Criando o produto no banco de dados
     const produto = await prisma.produto.create({
-      data: {
-        ...dadosValidados,
-        fotos: req.files ? req.files.map(file => file.path) : [],
-      },
+      data: produtoData,
     });
 
     res.status(201).json(produto);
   } catch (error) {
     console.error("Erro ao salvar produto:", error);
-    res.status(400).json({ error: "Erro ao salvar produto." });
+    res.status(400).json({ message: "Erro ao salvar produto" });
   }
 });
 
-// Rota PUT para atualizar um produto existente, incluindo fotos
-app.put("/produtos/:id", upload.array('fotos', 10), async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    // Valida os dados
-    const dadosValidados = produtoSchema.parse(req.body);
-
-    // Pega os arquivos de fotos do req.files
-    const fotos = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
-
-    // Atualiza o produto no banco de dados
-    const produtoAtualizado = await prisma.produto.update({
-      where: { id: parseInt(id, 10) },
-      data: {
-        ...dadosValidados,
-        foto01: fotos[0] || null,
-        foto02: fotos[1] || null,
-        foto03: fotos[2] || null,
-        foto04: fotos[3] || null,
-        foto05: fotos[4] || null,
-        foto06: fotos[5] || null,
-        foto07: fotos[6] || null,
-        foto08: fotos[7] || null,
-        foto09: fotos[8] || null,
-        foto10: fotos[9] || null,
-      },
-    });
-
-    res.status(200).json(produtoAtualizado);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      console.error("Erro de validação:", error.errors);
-      res.status(400).json({ error: "Dados inválidos.", detalhes: error.errors });
-    } else if (error.code === "P2025") {
-      res.status(404).json({ error: "Produto não encontrado." });
-    } else {
-      console.error("Erro ao atualizar produto:", error);
-      res.status(500).json({ error: "Erro ao atualizar produto." });
-    }
-  }
-});
-
-// Rota DELETE para excluir um produto
-app.delete("/produtos/:id", async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    await prisma.produto.delete({
-      where: { id: parseInt(id, 10) },
-    });
-
-    res.status(200).json({ message: "Produto excluído com sucesso." });
-  } catch (error) {
-    if (error.code === "P2025") {
-      res.status(404).json({ error: "Produto não encontrado." });
-    } else {
-      console.error("Erro ao excluir produto:", error);
-      res.status(500).json({ error: "Erro ao excluir produto." });
-    }
-  }
-});
-
-// Inicializa o servidor
+// Iniciando o servidor
 app.listen(port, () => {
-  console.log(`🚀 Servidor rodando na porta ${port}`);
+  console.log(`Servidor rodando na porta ${port}`);
 });

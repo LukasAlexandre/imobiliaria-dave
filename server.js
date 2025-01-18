@@ -102,10 +102,22 @@ app.get("/produtos", async (req, res) => {
 // Endpoint para criar novo produto
 app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
   try {
+    // Verifique se as fotos foram enviadas corretamente
+    const fotos = req.files?.map((file) => file.filename);
+
     // Validação do corpo da requisição
     const produtoData = produtoSchema.parse({
       ...req.body,
-      fotos: req.files?.map((file) => file.filename),
+      foto01: fotos?.[0] || null,
+      foto02: fotos?.[1] || null,
+      foto03: fotos?.[2] || null,
+      foto04: fotos?.[3] || null,
+      foto05: fotos?.[4] || null,
+      foto06: fotos?.[5] || null,
+      foto07: fotos?.[6] || null,
+      foto08: fotos?.[7] || null,
+      foto09: fotos?.[8] || null,
+      foto10: fotos?.[9] || null,
     });
 
     // Criando o produto no banco de dados
@@ -116,7 +128,10 @@ app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
     res.status(201).json(produto);
   } catch (error) {
     console.error("Erro ao salvar produto:", error);
-    res.status(400).json({ message: "Erro ao salvar produto" });
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: error.errors });
+    }
+    res.status(500).json({ message: "Erro ao salvar produto" });
   }
 });
 

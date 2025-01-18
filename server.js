@@ -126,27 +126,14 @@ app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
   }
 });
 
-// Rota para testar a criação de um produto
-app.get("/testar-produto", async (req, res) => {
+// Método GET para listar todos os produtos cadastrados
+app.get("/produtos", async (req, res) => {
   try {
-    const produto = await prisma.produto.create({
-      data: {
-        titulo: "Testar Produto",
-        descricao: "Produto de teste para a API.",
-        quartos: 2,
-        banheiros: 1,
-        garagem: 1,
-        preco: 500000,
-        localizacao: "Rua Teste, 123",
-        tipo: "Venda",
-        metragemCasa: 100,
-        fotos: ["https://example.com/imagem.jpg"],
-      },
-    });
-
-    res.json(produto);
+    const produtos = await prisma.produto.findMany(); // Busca todos os produtos no banco de dados
+    res.json(produtos);
   } catch (error) {
-    res.status(500).json({ message: "Erro ao criar produto de teste." });
+    console.error("Erro ao listar produtos:", error);
+    res.status(500).json({ message: "Erro ao listar produtos no banco de dados." });
   }
 });
 

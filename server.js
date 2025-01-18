@@ -91,7 +91,6 @@ app.get("/produtos", async (req, res) => {
 });
 
 // Rota POST para criar um novo produto com fotos
-// Rota POST para criar um novo produto com fotos
 app.post("/produtos", upload.array('fotos', 10), async (req, res) => {
   try {
     // Valida os dados (req.body agora contém apenas os dados do produto)
@@ -116,7 +115,7 @@ app.post("/produtos", upload.array('fotos', 10), async (req, res) => {
         foto10: fotos[9] || null,
       },
     });
-
+    
     res.status(201).json(novoProduto);
   } catch (error) {
     if (error instanceof z.ZodError) {

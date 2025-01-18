@@ -113,27 +113,27 @@ app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
         localizacao: produtoData.localizacao,
         tipo: produtoData.tipo,
         metragemCasa: produtoData.metragemCasa,
-        fotos: produtoData.fotos, // Usar as URLs validadas
+        fotos: produtoData.fotos.join(','), // Concatena as URLs de fotos para um único campo
         metragemTerreno: produtoData.metragemTerreno,
         observacao: produtoData.observacao,
       },
     });
 
-    res.status(201).json(novoProduto);
+    return res.status(201).json(novoProduto);
   } catch (error) {
     console.error("Erro ao salvar produto:", error);
-    res.status(500).json({ message: "Erro ao salvar produto no banco de dados." });
+    return res.status(500).json({ message: "Erro ao salvar produto.", error });
   }
 });
 
-// Método GET para listar todos os produtos cadastrados
+// Método GET para listar produtos
 app.get("/produtos", async (req, res) => {
   try {
-    const produtos = await prisma.produto.findMany(); // Busca todos os produtos no banco de dados
-    res.json(produtos);
+    const produtos = await prisma.produto.findMany();
+    return res.status(200).json(produtos);
   } catch (error) {
     console.error("Erro ao listar produtos:", error);
-    res.status(500).json({ message: "Erro ao listar produtos no banco de dados." });
+    return res.status(500).json({ message: "Erro ao listar produtos.", error });
   }
 });
 

@@ -101,33 +101,32 @@ app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
       fotos: finalFotosUrls, // Inclui as URLs de imagens ou arquivos
     });
 
-    /// Salvar o produto no banco de dados
-const novoProduto = await prisma.produto.create({
-  data: {
-    titulo: produtoData.titulo,
-    descricao: produtoData.descricao,
-    quartos: produtoData.quartos,
-    banheiros: produtoData.banheiros,
-    garagem: produtoData.garagem,
-    preco: produtoData.preco,
-    localizacao: produtoData.localizacao,
-    tipo: produtoData.tipo,
-    metragemCasa: produtoData.metragemCasa,
-    foto01: produtoData.fotos[0] || null,
-    foto02: produtoData.fotos[1] || null,
-    foto03: produtoData.fotos[2] || null,
-    foto04: produtoData.fotos[3] || null,
-    foto05: produtoData.fotos[4] || null,
-    foto06: produtoData.fotos[5] || null,
-    foto07: produtoData.fotos[6] || null,
-    foto08: produtoData.fotos[7] || null,
-    foto09: produtoData.fotos[8] || null,
-    foto10: produtoData.fotos[9] || null,
-    metragemTerreno: produtoData.metragemTerreno,
-    observacao: produtoData.observacao,
-  },
-});
-
+    // Salvar o produto no banco de dados
+    const novoProduto = await prisma.produto.create({
+      data: {
+        titulo: produtoData.titulo,
+        descricao: produtoData.descricao,
+        quartos: produtoData.quartos,
+        banheiros: produtoData.banheiros,
+        garagem: produtoData.garagem,
+        preco: produtoData.preco,
+        localizacao: produtoData.localizacao,
+        tipo: produtoData.tipo,
+        metragemCasa: produtoData.metragemCasa,
+        foto01: produtoData.fotos[0] || null,
+        foto02: produtoData.fotos[1] || null,
+        foto03: produtoData.fotos[2] || null,
+        foto04: produtoData.fotos[3] || null,
+        foto05: produtoData.fotos[4] || null,
+        foto06: produtoData.fotos[5] || null,
+        foto07: produtoData.fotos[6] || null,
+        foto08: produtoData.fotos[7] || null,
+        foto09: produtoData.fotos[8] || null,
+        foto10: produtoData.fotos[9] || null,
+        metragemTerreno: produtoData.metragemTerreno,
+        observacao: produtoData.observacao,
+      },
+    });
 
     return res.status(201).json(novoProduto);
   } catch (error) {

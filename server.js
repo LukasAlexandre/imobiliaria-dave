@@ -24,6 +24,18 @@ if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
 
+// Configuração de upload de arquivo com multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadPath); // Define a pasta para onde os arquivos serão enviados
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)); // Nome único para o arquivo
+  },
+});
+
+const upload = multer({ storage: storage });
+
 const corsOptions = {
   origin: ["http://localhost:3000", "https://imobiliaria-dave.onrender.com"],
   methods: ["GET", "POST", "PUT", "DELETE"],
@@ -62,6 +74,7 @@ const produtoSchema = z.object({
   metragemCasa: z.number().int().min(0).nullable().optional(),
   metragemTerreno: z.number().int().min(0).nullable().optional(),
   observacao: z.string().nullable().optional(),
+  fotos: z.array(z.string()).optional(), // Para lidar com as fotos
 });
 
 // Endpoint para listar produtos
@@ -77,13 +90,30 @@ app.get("/produtos", async (req, res) => {
   }
 });
 
-// Rota POST para criar um novo produto
-app.post("/produtos", async (req, res) => {
+// Rota POST para criar um novo produto com fotos
+app.post("/produtos", upload.array('fotos', 10), async (req, res) => {
   try {
+    // Valida os dados
     const dadosValidados = produtoSchema.parse(req.body);
 
+    // Pega os arquivos de fotos do req.files
+    const fotos = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+
+    // Criação do novo produto no banco de dados
     const novoProduto = await prisma.produto.create({
-      data: dadosValidados,
+      data: {
+        ...dadosValidados,
+        foto01: fotos[0] || null,
+        foto02: fotos[1] || null,
+        foto03: fotos[2] || null,
+        foto04: fotos[3] || null,
+        foto05: fotos[4] || null,
+        foto06: fotos[5] || null,
+        foto07: fotos[6] || null,
+        foto08: fotos[7] || null,
+        foto09: fotos[8] || null,
+        foto10: fotos[9] || null,
+      },
     });
 
     res.status(201).json(novoProduto);
@@ -98,16 +128,33 @@ app.post("/produtos", async (req, res) => {
   }
 });
 
-// Rota PUT para atualizar um produto existente
-app.put("/produtos/:id", async (req, res) => {
+// Rota PUT para atualizar um produto existente, incluindo fotos
+app.put("/produtos/:id", upload.array('fotos', 10), async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Valida os dados
     const dadosValidados = produtoSchema.parse(req.body);
 
+    // Pega os arquivos de fotos do req.files
+    const fotos = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+
+    // Atualiza o produto no banco de dados
     const produtoAtualizado = await prisma.produto.update({
       where: { id: parseInt(id, 10) },
-      data: dadosValidados,
+      data: {
+        ...dadosValidados,
+        foto01: fotos[0] || null,
+        foto02: fotos[1] || null,
+        foto03: fotos[2] || null,
+        foto04: fotos[3] || null,
+        foto05: fotos[4] || null,
+        foto06: fotos[5] || null,
+        foto07: fotos[6] || null,
+        foto08: fotos[7] || null,
+        foto09: fotos[8] || null,
+        foto10: fotos[9] || null,
+      },
     });
 
     res.status(200).json(produtoAtualizado);

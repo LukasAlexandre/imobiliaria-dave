@@ -118,8 +118,6 @@ app.post("/produtos", upload.array('fotos', 10), async (req, res) => {
   }
 });
 
-
-
 // Rota PUT para atualizar um produto existente, incluindo fotos
 app.put("/produtos/:id", upload.array('fotos', 10), async (req, res) => {
   const { id } = req.params;

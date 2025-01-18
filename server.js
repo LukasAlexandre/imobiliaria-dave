@@ -72,7 +72,7 @@ const produtoSchema = z.object({
   localizacao: z.string(),
   tipo: z.string(),
   metragemCasa: z.number().int().min(0),
-  fotos: z.array(z.string().url()).min(1).max(10), // Fotos como array de URLs
+  fotos: z.array(z.string().url()).min(1).max(10), // Aceita URLs de imagens diretamente
 });
 
 // Método POST para salvar produto
@@ -82,9 +82,12 @@ app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
     const fotosUrls = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
 
     // Se não houver fotos (nem arquivos nem URLs no corpo), retornamos erro
-    if (fotosUrls.length === 0) {
+    if (fotosUrls.length === 0 && !req.body.fotos) {
       return res.status(400).json({ message: "É necessário enviar pelo menos uma foto." });
     }
+
+    // Se as URLs de fotos foram enviadas diretamente no corpo, as adicionamos
+    const finalFotosUrls = fotosUrls.length > 0 ? fotosUrls : req.body.fotos;
 
     // Log para depuração
     console.log("Arquivos recebidos:", req.files);
@@ -93,7 +96,7 @@ app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
     // Validação dos dados recebidos com Zod
     const produtoData = produtoSchema.parse({
       ...req.body,
-      fotos: fotosUrls, // Inclui as URLs de imagens ou arquivos
+      fotos: finalFotosUrls, // Inclui as URLs de imagens ou arquivos
     });
 
     // Salvar no banco de dados

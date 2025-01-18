@@ -73,6 +73,8 @@ const produtoSchema = z.object({
   tipo: z.string(),
   metragemCasa: z.number().int().min(0),
   fotos: z.array(z.string().url()).min(1).max(10), // Aceita URLs de imagens diretamente
+  metragemTerreno: z.number().optional(),
+  observacao: z.string().optional(),
 });
 
 // Método POST para salvar produto
@@ -99,42 +101,56 @@ app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
       fotos: finalFotosUrls, // Inclui as URLs de imagens ou arquivos
     });
 
-    // Salvar no banco de dados
+    // Salvar o produto no banco de dados
     const novoProduto = await prisma.produto.create({
-      data: produtoData,
+      data: {
+        titulo: produtoData.titulo,
+        descricao: produtoData.descricao,
+        quartos: produtoData.quartos,
+        banheiros: produtoData.banheiros,
+        garagem: produtoData.garagem,
+        preco: produtoData.preco,
+        localizacao: produtoData.localizacao,
+        tipo: produtoData.tipo,
+        metragemCasa: produtoData.metragemCasa,
+        fotos: produtoData.fotos, // Usar as URLs validadas
+        metragemTerreno: produtoData.metragemTerreno,
+        observacao: produtoData.observacao,
+      },
     });
 
     res.status(201).json(novoProduto);
   } catch (error) {
     console.error("Erro ao salvar produto:", error);
-    res.status(400).json({ message: error.errors || error.message });
+    res.status(500).json({ message: "Erro ao salvar produto no banco de dados." });
   }
 });
 
-// Exemplo de dados para testar o método POST (3 URLs de imagens)
-const exemploDeDados = {
-  titulo: "Casa Moderna",
-  descricao: "Casa com 3 quartos e excelente localização.",
-  quartos: 3,
-  banheiros: 2,
-  garagem: 1,
-  preco: 500000,
-  localizacao: "Rua Exemplo, 123",
-  tipo: "Venda",
-  metragemCasa: 120,
-  fotos: [
-    "https://exemplo.com/imagem1.jpg",
-    "https://exemplo.com/imagem2.jpg",
-    "https://exemplo.com/imagem3.jpg",
-  ],
-};
+// Rota para testar a criação de um produto
+app.get("/testar-produto", async (req, res) => {
+  try {
+    const produto = await prisma.produto.create({
+      data: {
+        titulo: "Testar Produto",
+        descricao: "Produto de teste para a API.",
+        quartos: 2,
+        banheiros: 1,
+        garagem: 1,
+        preco: 500000,
+        localizacao: "Rua Teste, 123",
+        tipo: "Venda",
+        metragemCasa: 100,
+        fotos: ["https://example.com/imagem.jpg"],
+      },
+    });
 
-// Rota para testar o envio de dados
-app.get("/testar-produto", (req, res) => {
-  res.json(exemploDeDados);
+    res.json(produto);
+  } catch (error) {
+    res.status(500).json({ message: "Erro ao criar produto de teste." });
+  }
 });
 
-// Inicializando o servidor
+// Iniciar o servidor
 app.listen(port, () => {
   console.log(`Servidor rodando na porta ${port}`);
 });

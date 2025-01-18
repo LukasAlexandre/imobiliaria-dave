@@ -76,12 +76,21 @@ const produtoSchema = z.object({
 });
 
 // Método POST para salvar produto
+// Método POST para salvar produto
 app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
   try {
+    // Se os arquivos foram enviados, geramos URLs para os mesmos
+    const fotosUrls = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+
+    // Se não houver fotos (nem arquivos nem URLs no corpo), retornamos erro
+    if (fotosUrls.length === 0) {
+      return res.status(400).json({ message: "É necessário enviar pelo menos uma foto." });
+    }
+
     // Validação dos dados recebidos com Zod
     const produtoData = produtoSchema.parse({
       ...req.body,
-      fotos: req.files ? req.files.map(file => `/uploads/${file.filename}`) : [],
+      fotos: fotosUrls, // Inclui as URLs de imagens ou arquivos
     });
 
     // Salvar no banco de dados

@@ -73,36 +73,57 @@ const produtoSchema = z.object({
 });
 
 // Método POST para salvar produto
-app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
-  try {
-    const fotosUrls = req.files.map((file) => `/uploads/${file.filename}`);
-    const produtoData = produtoSchema.parse({
-      ...req.body,
-      fotos: fotosUrls,
-    });
 
-    const novoProduto = await prisma.produto.create({
-      data: {
-        ...produtoData,
-        foto01: fotosUrls[0] || null,
-        foto02: fotosUrls[1] || null,
-        foto03: fotosUrls[2] || null,
-        foto04: fotosUrls[3] || null,
-        foto05: fotosUrls[4] || null,
-        foto06: fotosUrls[5] || null,
-        foto07: fotosUrls[6] || null,
-        foto08: fotosUrls[7] || null,
-        foto09: fotosUrls[8] || null,
-        foto10: fotosUrls[9] || null,
-      },
-    });
 
-    return res.status(201).json(novoProduto);
-  } catch (error) {
-    console.error("Erro ao salvar produto:", error);
-    return res.status(400).json({ message: "Erro ao salvar produto.", error });
+app.post(
+  "/produtos",
+  upload.fields([
+    { name: "foto-1", maxCount: 1 },
+    { name: "foto-2", maxCount: 1 },
+    { name: "foto-3", maxCount: 1 },
+    { name: "foto-4", maxCount: 1 },
+    { name: "foto-5", maxCount: 1 },
+    { name: "foto-6", maxCount: 1 },
+    { name: "foto-7", maxCount: 1 },
+    { name: "foto-8", maxCount: 1 },
+    { name: "foto-9", maxCount: 1 },
+    { name: "foto-10", maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      const fotosUrls = Object.values(req.files || {}).map(
+        (files) => `/uploads/${files[0].filename}`
+      );
+
+      const produtoData = produtoSchema.parse({
+        ...req.body,
+        fotos: fotosUrls,
+      });
+
+      const novoProduto = await prisma.produto.create({
+        data: {
+          ...produtoData,
+          foto01: fotosUrls[0] || null,
+          foto02: fotosUrls[1] || null,
+          foto03: fotosUrls[2] || null,
+          foto04: fotosUrls[3] || null,
+          foto05: fotosUrls[4] || null,
+          foto06: fotosUrls[5] || null,
+          foto07: fotosUrls[6] || null,
+          foto08: fotosUrls[7] || null,
+          foto09: fotosUrls[8] || null,
+          foto10: fotosUrls[9] || null,
+        },
+      });
+
+      return res.status(201).json(novoProduto);
+    } catch (error) {
+      console.error("Erro ao salvar produto:", error);
+      return res.status(400).json({ message: "Erro ao salvar produto.", error });
+    }
   }
-});
+);
+
 
 // Método GET para listar produtos
 app.get("/produtos", async (req, res) => {

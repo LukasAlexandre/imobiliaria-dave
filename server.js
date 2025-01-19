@@ -26,12 +26,8 @@ if (!fs.existsSync(uploadPath)) {
 
 // Configuração de upload de arquivo com multer
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadPath); // Define a pasta para onde os arquivos serão enviados
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)); // Nome único para o arquivo
-  },
+  destination: (req, file, cb) => cb(null, uploadPath),
+  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
 });
 
 const upload = multer({ storage: storage });
@@ -56,8 +52,7 @@ app.use("/uploads", express.static(uploadPath));
     console.log("✅ Conectado ao banco MySQL com Prisma!");
   } catch (error) {
     console.error("❌ Erro ao conectar ao banco:", error);
-    console.error("🛠️ Verifique se o banco está online e se a DATABASE_URL está correta.");
-    process.exit(1); // Encerra o processo para evitar falhas em produção
+    process.exit(1);
   }
 })();
 
@@ -72,7 +67,7 @@ const produtoSchema = z.object({
   localizacao: z.string(),
   tipo: z.string(),
   metragemCasa: z.number().int().min(0),
-  fotos: z.array(z.string().url()).min(1).max(10), // Aceita URLs de imagens diretamente
+  fotos: z.array(z.string()).min(1).max(10), // Aceita URLs ou nomes de arquivos
   metragemTerreno: z.number().optional(),
   observacao: z.string().optional(),
 });
@@ -80,58 +75,32 @@ const produtoSchema = z.object({
 // Método POST para salvar produto
 app.post("/produtos", upload.array("fotos", 10), async (req, res) => {
   try {
-    // Se os arquivos foram enviados, geramos URLs para os mesmos
-    const fotosUrls = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
-
-    // Se não houver fotos (nem arquivos nem URLs no corpo), retornamos erro
-    if (fotosUrls.length === 0 && !req.body.fotos) {
-      return res.status(400).json({ message: "É necessário enviar pelo menos uma foto." });
-    }
-
-    // Se as URLs de fotos foram enviadas diretamente no corpo, as adicionamos
-    const finalFotosUrls = fotosUrls.length > 0 ? fotosUrls : req.body.fotos;
-
-    // Log para depuração
-    console.log("Arquivos recebidos:", req.files);
-    console.log("Corpo da requisição:", req.body);
-
-    // Validação dos dados recebidos com Zod
+    const fotosUrls = req.files.map((file) => `/uploads/${file.filename}`);
     const produtoData = produtoSchema.parse({
       ...req.body,
-      fotos: finalFotosUrls, // Inclui as URLs de imagens ou arquivos
+      fotos: fotosUrls,
     });
 
-    // Salvar o produto no banco de dados
     const novoProduto = await prisma.produto.create({
       data: {
-        titulo: produtoData.titulo,
-        descricao: produtoData.descricao,
-        quartos: produtoData.quartos,
-        banheiros: produtoData.banheiros,
-        garagem: produtoData.garagem,
-        preco: produtoData.preco,
-        localizacao: produtoData.localizacao,
-        tipo: produtoData.tipo,
-        metragemCasa: produtoData.metragemCasa,
-        foto01: produtoData.fotos[0] || null,
-        foto02: produtoData.fotos[1] || null,
-        foto03: produtoData.fotos[2] || null,
-        foto04: produtoData.fotos[3] || null,
-        foto05: produtoData.fotos[4] || null,
-        foto06: produtoData.fotos[5] || null,
-        foto07: produtoData.fotos[6] || null,
-        foto08: produtoData.fotos[7] || null,
-        foto09: produtoData.fotos[8] || null,
-        foto10: produtoData.fotos[9] || null,
-        metragemTerreno: produtoData.metragemTerreno,
-        observacao: produtoData.observacao,
+        ...produtoData,
+        foto01: fotosUrls[0] || null,
+        foto02: fotosUrls[1] || null,
+        foto03: fotosUrls[2] || null,
+        foto04: fotosUrls[3] || null,
+        foto05: fotosUrls[4] || null,
+        foto06: fotosUrls[5] || null,
+        foto07: fotosUrls[6] || null,
+        foto08: fotosUrls[7] || null,
+        foto09: fotosUrls[8] || null,
+        foto10: fotosUrls[9] || null,
       },
     });
 
     return res.status(201).json(novoProduto);
   } catch (error) {
     console.error("Erro ao salvar produto:", error);
-    return res.status(500).json({ message: "Erro ao salvar produto.", error });
+    return res.status(400).json({ message: "Erro ao salvar produto.", error });
   }
 });
 
@@ -146,7 +115,4 @@ app.get("/produtos", async (req, res) => {
   }
 });
 
-// Iniciar o servidor
-app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`);
-});
+app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));

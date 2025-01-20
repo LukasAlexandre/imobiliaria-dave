@@ -60,7 +60,6 @@ const connectToDatabase = async () => {
 connectToDatabase();
 
 // Validação do esquema com Zod
-// Validação do esquema com Zod
 const produtoSchema = z.object({
   titulo: z.string(),
   descricao: z.string(),
@@ -71,7 +70,6 @@ const produtoSchema = z.object({
   localizacao: z.string(),
   tipo: z.string(),
   metragemCasa: z.number().int().min(0),
-  fotos: z.array(z.string()).min(1).max(10).optional(), // Permite um array de fotos
   foto01: z.string().nullable().optional(),
   foto02: z.string().nullable().optional(),
   foto03: z.string().nullable().optional(),
@@ -85,7 +83,6 @@ const produtoSchema = z.object({
   metragemTerreno: z.number().optional(),
   observacao: z.string().optional(),
 });
-
 
 app.post(
   "/produtos",
@@ -103,42 +100,34 @@ app.post(
   ]),
   async (req, res) => {
     try {
-      // Coleta as URLs das fotos a partir dos arquivos ou URLs fornecidas no corpo da requisição
+      // Coleta as URLs das fotos a partir dos arquivos
       const fotosUrls = Object.values(req.files || {}).map(
         (files) => `/uploads/${files[0].filename}`
       );
 
-      // Se não houver fotos enviadas via arquivo, verifica se foram enviadas URLs de fotos
-      const fotosExternas = Array.isArray(req.body.fotos)
-        ? req.body.fotos
-        : req.body.fotos ? req.body.fotos.split(",") : [];
-
-      // Junta as fotos enviadas por upload e as fotos externas
-      const todasAsFotos = [...fotosUrls, ...fotosExternas];
-
       // Verifica se pelo menos uma foto foi enviada
-      if (todasAsFotos.length === 0) {
+      if (fotosUrls.length === 0) {
         return res.status(400).json({ message: "É necessário enviar pelo menos uma foto." });
       }
 
       // Verifica se o número de fotos não ultrapassa 10
-      if (todasAsFotos.length > 10) {
+      if (fotosUrls.length > 10) {
         return res.status(400).json({ message: "O número máximo de fotos é 10." });
       }
 
       // Valida os dados do produto usando o Zod
       const produtoData = produtoSchema.parse({
         ...req.body,
-        foto01: todasAsFotos[0] || null,
-        foto02: todasAsFotos[1] || null,
-        foto03: todasAsFotos[2] || null,
-        foto04: todasAsFotos[3] || null,
-        foto05: todasAsFotos[4] || null,
-        foto06: todasAsFotos[5] || null,
-        foto07: todasAsFotos[6] || null,
-        foto08: todasAsFotos[7] || null,
-        foto09: todasAsFotos[8] || null,
-        foto10: todasAsFotos[9] || null,
+        foto01: fotosUrls[0] || null,
+        foto02: fotosUrls[1] || null,
+        foto03: fotosUrls[2] || null,
+        foto04: fotosUrls[3] || null,
+        foto05: fotosUrls[4] || null,
+        foto06: fotosUrls[5] || null,
+        foto07: fotosUrls[6] || null,
+        foto08: fotosUrls[7] || null,
+        foto09: fotosUrls[8] || null,
+        foto10: fotosUrls[9] || null,
       });
 
       // Criação do produto no banco de dados
@@ -153,7 +142,6 @@ app.post(
     }
   }
 );
-
 
 // Método GET para listar produtos
 app.get("/produtos", async (req, res) => {

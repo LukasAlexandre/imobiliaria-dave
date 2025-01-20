@@ -34,10 +34,11 @@ const upload = multer({ storage: storage });
 
 // CORS Configuration
 const corsOptions = {
-  origin: ["http://localhost:3000", "https://imobiliaria-dave.onrender.com"],
+  origin: "*", // Permitir todas as origens para teste (substitua com domínios específicos em produção)
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
+
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));

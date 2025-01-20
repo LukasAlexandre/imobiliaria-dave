@@ -84,50 +84,71 @@ const produtoSchema = z.object({
   observacao: z.string().optional(),
 });
 
-app.post(
-  "/produtos",
-  upload.fields([
-    { name: "foto-1", maxCount: 1 },
-    { name: "foto-2", maxCount: 1 },
-    { name: "foto-3", maxCount: 1 },
-    { name: "foto-4", maxCount: 1 },
-    { name: "foto-5", maxCount: 1 },
-    { name: "foto-6", maxCount: 1 },
-    { name: "foto-7", maxCount: 1 },
-    { name: "foto-8", maxCount: 1 },
-    { name: "foto-9", maxCount: 1 },
-    { name: "foto-10", maxCount: 1 },
-  ]),
-  async (req, res) => {
-    try {
-      // Valida os dados do produto usando o Zod
-      const produtoData = produtoSchema.parse({
-        ...req.body,
-        foto01: req.files["foto-1"] ? `/uploads/${req.files["foto-1"][0].filename}` : null,
-        foto02: req.files["foto-2"] ? `/uploads/${req.files["foto-2"][0].filename}` : null,
-        foto03: req.files["foto-3"] ? `/uploads/${req.files["foto-3"][0].filename}` : null,
-        foto04: req.files["foto-4"] ? `/uploads/${req.files["foto-4"][0].filename}` : null,
-        foto05: req.files["foto-5"] ? `/uploads/${req.files["foto-5"][0].filename}` : null,
-        foto06: req.files["foto-6"] ? `/uploads/${req.files["foto-6"][0].filename}` : null,
-        foto07: req.files["foto-7"] ? `/uploads/${req.files["foto-7"][0].filename}` : null,
-        foto08: req.files["foto-8"] ? `/uploads/${req.files["foto-8"][0].filename}` : null,
-        foto09: req.files["foto-9"] ? `/uploads/${req.files["foto-9"][0].filename}` : null,
-        foto10: req.files["foto-10"] ? `/uploads/${req.files["foto-10"][0].filename}` : null,
-      });
+app.post("/produtos", upload.fields([
+  { name: "foto-1", maxCount: 1 },
+  { name: "foto-2", maxCount: 1 },
+  { name: "foto-3", maxCount: 1 },
+  { name: "foto-4", maxCount: 1 },
+  { name: "foto-5", maxCount: 1 },
+  { name: "foto-6", maxCount: 1 },
+  { name: "foto-7", maxCount: 1 },
+  { name: "foto-8", maxCount: 1 },
+  { name: "foto-9", maxCount: 1 },
+  { name: "foto-10", maxCount: 1 }
+]), async (req, res) => {
+  try {
+    // Extraindo dados do corpo da requisição
+    const produtoData = req.body;
 
-      // Criação do produto no banco de dados
-      const novoProduto = await prisma.produto.create({
-        data: produtoData,
-      });
-      console.log("Arquivos recebidos:", req.files);
-
-      return res.status(201).json({ message: "Produto criado com sucesso!", produto: novoProduto });
-    } catch (error) {
-      console.error("Erro ao salvar produto:", error);
-      return res.status(400).json({ message: error.message || "Erro ao salvar produto.", error });
+    // Mapeando fotos de acordo com a estrutura do produto
+    const fotos = [];
+    for (let i = 1; i <= 10; i++) {
+      if (req.files[`foto-${i}`]) {
+        fotos.push(req.files[`foto-${i}`][0].filename); // Armazenando o nome do arquivo
+      } else {
+        fotos.push(null); // Nenhuma foto foi enviada
+      }
     }
+
+    // Validação com Zod
+    const validProdutoData = produtoSchema.parse({
+      ...produtoData,
+      foto01: fotos[0],
+      foto02: fotos[1],
+      foto03: fotos[2],
+      foto04: fotos[3],
+      foto05: fotos[4],
+      foto06: fotos[5],
+      foto07: fotos[6],
+      foto08: fotos[7],
+      foto09: fotos[8],
+      foto10: fotos[9],
+    });
+
+    // Salvando produto no banco de dados
+    const produto = await prisma.produto.create({
+      data: {
+        ...validProdutoData,
+        foto01: fotos[0],
+        foto02: fotos[1],
+        foto03: fotos[2],
+        foto04: fotos[3],
+        foto05: fotos[4],
+        foto06: fotos[5],
+        foto07: fotos[6],
+        foto08: fotos[7],
+        foto09: fotos[8],
+        foto10: fotos[9],
+      },
+    });
+
+    return res.status(201).json(produto);
+  } catch (error) {
+    console.error("Erro ao salvar produto:", error);
+    return res.status(500).json({ message: "Erro ao salvar produto", error });
   }
-);
+});
+
 
 // Método GET para listar produtos
 app.get("/produtos", async (req, res) => {

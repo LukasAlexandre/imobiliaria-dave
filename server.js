@@ -91,35 +91,28 @@ app.post(
   ]),
   async (req, res) => {
     try {
-      // Converte os valores de texto para números antes da validação
-      const produtoData = {
+      const fotosUrls = Object.values(req.files || {}).map(
+        (files) => `/uploads/${files[0].filename}`
+      );
+
+      const produtoData = produtoSchema.parse({
         ...req.body,
-        quartos: Number(req.body.quartos),
-        banheiros: Number(req.body.banheiros),
-        garagem: Number(req.body.garagem),
-        preco: Number(req.body.preco),
-        metragemCasa: Number(req.body.metragemCasa),
-        metragemTerreno: req.body.metragemTerreno ? Number(req.body.metragemTerreno) : undefined,
-        fotos: Object.values(req.files || {}).map((files) => `/uploads/${files[0].filename}`),
-      };
+        fotos: fotosUrls,
+      });
 
-      // Validação do schema com Zod
-      const validData = produtoSchema.parse(produtoData);
-
-      // Criação do produto
       const novoProduto = await prisma.produto.create({
         data: {
-          ...validData,
-          foto01: validData.fotos[0] || null,
-          foto02: validData.fotos[1] || null,
-          foto03: validData.fotos[2] || null,
-          foto04: validData.fotos[3] || null,
-          foto05: validData.fotos[4] || null,
-          foto06: validData.fotos[5] || null,
-          foto07: validData.fotos[6] || null,
-          foto08: validData.fotos[7] || null,
-          foto09: validData.fotos[8] || null,
-          foto10: validData.fotos[9] || null,
+          ...produtoData,
+          foto01: fotosUrls[0] || null,
+          foto02: fotosUrls[1] || null,
+          foto03: fotosUrls[2] || null,
+          foto04: fotosUrls[3] || null,
+          foto05: fotosUrls[4] || null,
+          foto06: fotosUrls[5] || null,
+          foto07: fotosUrls[6] || null,
+          foto08: fotosUrls[7] || null,
+          foto09: fotosUrls[8] || null,
+          foto10: fotosUrls[9] || null,
         },
       });
 

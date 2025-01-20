@@ -60,6 +60,7 @@ const connectToDatabase = async () => {
 connectToDatabase();
 
 // Validação do esquema com Zod
+// Validação do esquema com Zod
 const produtoSchema = z.object({
   titulo: z.string(),
   descricao: z.string(),
@@ -70,10 +71,21 @@ const produtoSchema = z.object({
   localizacao: z.string(),
   tipo: z.string(),
   metragemCasa: z.number().int().min(0),
-  fotos: z.array(z.string()).min(1).max(10), // Aceita URLs ou nomes de arquivos
+  fotos: z.array(z.string()).min(1).max(10).optional(), // Permite um array de fotos
+  foto01: z.string().optional(),
+  foto02: z.string().optional(),
+  foto03: z.string().optional(),
+  foto04: z.string().optional(),
+  foto05: z.string().optional(),
+  foto06: z.string().optional(),
+  foto07: z.string().optional(),
+  foto08: z.string().optional(),
+  foto09: z.string().optional(),
+  foto10: z.string().optional(),
   metragemTerreno: z.number().optional(),
   observacao: z.string().optional(),
 });
+
 
 // Método POST para salvar produto
 app.post(
@@ -98,7 +110,7 @@ app.post(
       );
 
       // Se não houver fotos enviadas via arquivo, verifica se foram enviadas URLs de fotos
-      const fotosExternas = req.body.fotos ? req.body.fotos : [];
+      const fotosExternas = req.body.fotos ? req.body.fotos.split(",") : []; // Agora aceitando um array de URLs separadas por vírgula
 
       // Junta as fotos enviadas por upload e as fotos externas
       const todasAsFotos = [...fotosUrls, ...fotosExternas];
@@ -143,6 +155,7 @@ app.post(
     }
   }
 );
+
 
 // Método GET para listar produtos
 app.get("/produtos", async (req, res) => {

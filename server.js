@@ -87,7 +87,6 @@ const produtoSchema = z.object({
 });
 
 
-// Método POST para salvar produto
 app.post(
   "/produtos",
   upload.fields([
@@ -114,7 +113,6 @@ app.post(
         ? req.body.fotos
         : req.body.fotos ? req.body.fotos.split(",") : [];
 
-
       // Junta as fotos enviadas por upload e as fotos externas
       const todasAsFotos = [...fotosUrls, ...fotosExternas];
 
@@ -131,24 +129,21 @@ app.post(
       // Valida os dados do produto usando o Zod
       const produtoData = produtoSchema.parse({
         ...req.body,
-        fotos: todasAsFotos,
+        foto01: todasAsFotos[0] || null,
+        foto02: todasAsFotos[1] || null,
+        foto03: todasAsFotos[2] || null,
+        foto04: todasAsFotos[3] || null,
+        foto05: todasAsFotos[4] || null,
+        foto06: todasAsFotos[5] || null,
+        foto07: todasAsFotos[6] || null,
+        foto08: todasAsFotos[7] || null,
+        foto09: todasAsFotos[8] || null,
+        foto10: todasAsFotos[9] || null,
       });
 
       // Criação do produto no banco de dados
       const novoProduto = await prisma.produto.create({
-        data: {
-          ...produtoData,
-          foto01: todasAsFotos[0] || null,
-          foto02: todasAsFotos[1] || null,
-          foto03: todasAsFotos[2] || null,
-          foto04: todasAsFotos[3] || null,
-          foto05: todasAsFotos[4] || null,
-          foto06: todasAsFotos[5] || null,
-          foto07: todasAsFotos[6] || null,
-          foto08: todasAsFotos[7] || null,
-          foto09: todasAsFotos[8] || null,
-          foto10: todasAsFotos[9] || null,
-        },
+        data: produtoData,
       });
 
       return res.status(201).json({ message: "Produto criado com sucesso!", produto: novoProduto });

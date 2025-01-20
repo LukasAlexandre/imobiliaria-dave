@@ -91,7 +91,12 @@ app.post(
   ]),
   async (req, res) => {
     try {
-      // Converte os valores de texto para números antes da validação
+      // Coletando as URLs das fotos carregadas
+      const fotosUrls = Object.keys(req.files)
+        .map((key) => req.files[key][0].filename)
+        .map((filename) => `${req.protocol}://${req.get("host")}/uploads/${filename}`);
+
+      // Prepare os dados para validação
       const produtoData = {
         ...req.body,
         quartos: Number(req.body.quartos),
@@ -100,13 +105,13 @@ app.post(
         preco: Number(req.body.preco),
         metragemCasa: Number(req.body.metragemCasa),
         metragemTerreno: req.body.metragemTerreno ? Number(req.body.metragemTerreno) : undefined,
-        fotos: Object.values(req.files || {}).map((files) => `/uploads/${files[0].filename}`),
+        fotos: fotosUrls,
       };
 
       // Validação do schema com Zod
       const validData = produtoSchema.parse(produtoData);
 
-      // Criação do produto
+      // Criação do produto no banco de dados
       const novoProduto = await prisma.produto.create({
         data: {
           ...validData,
@@ -130,6 +135,7 @@ app.post(
     }
   }
 );
+
 
 
 // Método GET para listar produtos

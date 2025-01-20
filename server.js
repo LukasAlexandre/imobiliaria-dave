@@ -100,24 +100,20 @@ app.post(
   ]),
   async (req, res) => {
     try {
-      // Coleta as URLs das fotos a partir dos arquivos
-      const fotosUrls = Object.values(req.files || {}).map(
-        (files) => `/uploads/${files[0].filename}`
-      );
-
-      // Verifica se pelo menos uma foto foi enviada
-      if (fotosUrls.length === 0) {
-        return res.status(400).json({ message: "É necessário enviar pelo menos uma foto." });
-      }
-
-      // Verifica se o número de fotos não ultrapassa 10
-      if (fotosUrls.length > 10) {
-        return res.status(400).json({ message: "O número máximo de fotos é 10." });
-      }
-
+    
       // Valida os dados do produto usando o Zod
       const produtoData = produtoSchema.parse({
-        ...req.body,
+        titulo: req.body.titulo,
+        descricao: req.body.descricao,
+        quartos: parseInt(req.body.quartos),
+        banheiros: parseInt(req.body.banheiros),
+        garagem: parseInt(req.body.garagem),
+        preco: parseFloat(req.body.preco),
+        localizacao: req.body.localizacao,
+        tipo: req.body.tipo,
+        metragemCasa: parseInt(req.body.metragemCasa),
+        metragemTerreno: req.body.metragemTerreno ? parseInt(req.body.metragemTerreno) : null, // Caso seja opcional
+        observacao: req.body.observacao || null, // Caso seja opcional
         foto01: fotosUrls[0] || null,
         foto02: fotosUrls[1] || null,
         foto03: fotosUrls[2] || null,
@@ -129,6 +125,7 @@ app.post(
         foto09: fotosUrls[8] || null,
         foto10: fotosUrls[9] || null,
       });
+      
 
       // Criação do produto no banco de dados
       const novoProduto = await prisma.produto.create({

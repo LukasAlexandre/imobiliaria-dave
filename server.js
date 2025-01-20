@@ -73,8 +73,6 @@ const produtoSchema = z.object({
 });
 
 // Método POST para salvar produto
-
-
 app.post(
   "/produtos",
   upload.fields([
@@ -91,15 +89,18 @@ app.post(
   ]),
   async (req, res) => {
     try {
+      // Coleta as URLs das fotos a partir dos arquivos
       const fotosUrls = Object.values(req.files || {}).map(
         (files) => `/uploads/${files[0].filename}`
       );
 
+      // Valida os dados do produto usando o Zod
       const produtoData = produtoSchema.parse({
         ...req.body,
         fotos: fotosUrls,
       });
 
+      // Criação do produto no banco de dados
       const novoProduto = await prisma.produto.create({
         data: {
           ...produtoData,
@@ -116,6 +117,7 @@ app.post(
         },
       });
 
+      // Retorna o novo produto criado
       return res.status(201).json(novoProduto);
     } catch (error) {
       console.error("Erro ao salvar produto:", error);
@@ -123,7 +125,6 @@ app.post(
     }
   }
 );
-
 
 // Método GET para listar produtos
 app.get("/produtos", async (req, res) => {
@@ -136,4 +137,5 @@ app.get("/produtos", async (req, res) => {
   }
 });
 
+// Inicia o servidor
 app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));

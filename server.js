@@ -100,32 +100,20 @@ app.post(
   ]),
   async (req, res) => {
     try {
-    
       // Valida os dados do produto usando o Zod
       const produtoData = produtoSchema.parse({
-        titulo: req.body.titulo,
-        descricao: req.body.descricao,
-        quartos: parseInt(req.body.quartos),
-        banheiros: parseInt(req.body.banheiros),
-        garagem: parseInt(req.body.garagem),
-        preco: parseFloat(req.body.preco),
-        localizacao: req.body.localizacao,
-        tipo: req.body.tipo,
-        metragemCasa: parseInt(req.body.metragemCasa),
-        metragemTerreno: req.body.metragemTerreno ? parseInt(req.body.metragemTerreno) : null, // Caso seja opcional
-        observacao: req.body.observacao || null, // Caso seja opcional
-        foto01: fotosUrls[0] || null,
-        foto02: fotosUrls[1] || null,
-        foto03: fotosUrls[2] || null,
-        foto04: fotosUrls[3] || null,
-        foto05: fotosUrls[4] || null,
-        foto06: fotosUrls[5] || null,
-        foto07: fotosUrls[6] || null,
-        foto08: fotosUrls[7] || null,
-        foto09: fotosUrls[8] || null,
-        foto10: fotosUrls[9] || null,
+        ...req.body,
+        foto01: req.files["foto-1"] ? `/uploads/${req.files["foto-1"][0].filename}` : null,
+        foto02: req.files["foto-2"] ? `/uploads/${req.files["foto-2"][0].filename}` : null,
+        foto03: req.files["foto-3"] ? `/uploads/${req.files["foto-3"][0].filename}` : null,
+        foto04: req.files["foto-4"] ? `/uploads/${req.files["foto-4"][0].filename}` : null,
+        foto05: req.files["foto-5"] ? `/uploads/${req.files["foto-5"][0].filename}` : null,
+        foto06: req.files["foto-6"] ? `/uploads/${req.files["foto-6"][0].filename}` : null,
+        foto07: req.files["foto-7"] ? `/uploads/${req.files["foto-7"][0].filename}` : null,
+        foto08: req.files["foto-8"] ? `/uploads/${req.files["foto-8"][0].filename}` : null,
+        foto09: req.files["foto-9"] ? `/uploads/${req.files["foto-9"][0].filename}` : null,
+        foto10: req.files["foto-10"] ? `/uploads/${req.files["foto-10"][0].filename}` : null,
       });
-      
 
       // Criação do produto no banco de dados
       const novoProduto = await prisma.produto.create({

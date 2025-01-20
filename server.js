@@ -134,6 +134,7 @@ app.post(
       const novoProduto = await prisma.produto.create({
         data: produtoData,
       });
+      console.log("Arquivos recebidos:", req.files);
 
       return res.status(201).json({ message: "Produto criado com sucesso!", produto: novoProduto });
     } catch (error) {

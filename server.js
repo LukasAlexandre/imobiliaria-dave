@@ -85,16 +85,16 @@ const produtoSchema = z.object({
 });
 
 app.post("/produtos", upload.fields([
-  { name: "foto-1", maxCount: 1 },
-  { name: "foto-2", maxCount: 1 },
-  { name: "foto-3", maxCount: 1 },
-  { name: "foto-4", maxCount: 1 },
-  { name: "foto-5", maxCount: 1 },
-  { name: "foto-6", maxCount: 1 },
-  { name: "foto-7", maxCount: 1 },
-  { name: "foto-8", maxCount: 1 },
-  { name: "foto-9", maxCount: 1 },
-  { name: "foto-10", maxCount: 1 }
+  { name: "foto01", maxCount: 1 },
+  { name: "foto02", maxCount: 1 },
+  { name: "foto03", maxCount: 1 },
+  { name: "foto04", maxCount: 1 },
+  { name: "foto05", maxCount: 1 },
+  { name: "foto06", maxCount: 1 },
+  { name: "foto07", maxCount: 1 },
+  { name: "foto08", maxCount: 1 },
+  { name: "foto09", maxCount: 1 },
+  { name: "foto10", maxCount: 1 }
 ]), async (req, res) => {
   try {
     // Extraindo dados do corpo da requisição

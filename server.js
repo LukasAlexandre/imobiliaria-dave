@@ -110,7 +110,10 @@ app.post(
       );
 
       // Se não houver fotos enviadas via arquivo, verifica se foram enviadas URLs de fotos
-      const fotosExternas = req.body.fotos ? req.body.fotos.split(",") : []; // Agora aceitando um array de URLs separadas por vírgula
+      const fotosExternas = Array.isArray(req.body.fotos)
+        ? req.body.fotos
+        : req.body.fotos ? req.body.fotos.split(",") : [];
+
 
       // Junta as fotos enviadas por upload e as fotos externas
       const todasAsFotos = [...fotosUrls, ...fotosExternas];

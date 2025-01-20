@@ -94,6 +94,11 @@ app.post(
         (files) => `/uploads/${files[0].filename}`
       );
 
+      // Verifica se pelo menos uma foto foi enviada
+      if (fotosUrls.length === 0) {
+        return res.status(400).json({ message: "É necessário enviar pelo menos uma foto." });
+      }
+
       // Valida os dados do produto usando o Zod
       const produtoData = produtoSchema.parse({
         ...req.body,

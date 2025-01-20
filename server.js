@@ -92,36 +92,42 @@ app.post(
   ]),
   async (req, res) => {
     try {
-      // Coleta as URLs das fotos a partir dos arquivos
+      // Coleta as URLs das fotos a partir dos arquivos ou URLs fornecidas no corpo da requisição
       const fotosUrls = Object.values(req.files || {}).map(
         (files) => `/uploads/${files[0].filename}`
       );
 
+      // Se não houver fotos enviadas via arquivo, verifica se foram enviadas URLs de fotos
+      const fotosExternas = req.body.fotos ? JSON.parse(req.body.fotos) : [];
+
+      // Junta as fotos enviadas por upload e as fotos externas
+      const todasAsFotos = [...fotosUrls, ...fotosExternas];
+
       // Verifica se pelo menos uma foto foi enviada
-      if (fotosUrls.length === 0) {
+      if (todasAsFotos.length === 0) {
         return res.status(400).json({ message: "É necessário enviar pelo menos uma foto." });
       }
 
       // Valida os dados do produto usando o Zod
       const produtoData = produtoSchema.parse({
         ...req.body,
-        fotos: fotosUrls,
+        fotos: todasAsFotos,
       });
 
       // Criação do produto no banco de dados
       const novoProduto = await prisma.produto.create({
         data: {
           ...produtoData,
-          foto01: fotosUrls[0] || null,
-          foto02: fotosUrls[1] || null,
-          foto03: fotosUrls[2] || null,
-          foto04: fotosUrls[3] || null,
-          foto05: fotosUrls[4] || null,
-          foto06: fotosUrls[5] || null,
-          foto07: fotosUrls[6] || null,
-          foto08: fotosUrls[7] || null,
-          foto09: fotosUrls[8] || null,
-          foto10: fotosUrls[9] || null,
+          foto01: todasAsFotos[0] || null,
+          foto02: todasAsFotos[1] || null,
+          foto03: todasAsFotos[2] || null,
+          foto04: todasAsFotos[3] || null,
+          foto05: todasAsFotos[4] || null,
+          foto06: todasAsFotos[5] || null,
+          foto07: todasAsFotos[6] || null,
+          foto08: todasAsFotos[7] || null,
+          foto09: todasAsFotos[8] || null,
+          foto10: todasAsFotos[9] || null,
         },
       });
 

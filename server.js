@@ -39,7 +39,6 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
-
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -71,6 +70,7 @@ const produtoSchema = z.object({
   localizacao: z.string(),
   tipo: z.string(),
   metragemCasa: z.number().int().min(0),
+  metragemTerreno: z.number().optional(),
   foto01: z.string().nullable().optional(),
   foto02: z.string().nullable().optional(),
   foto03: z.string().nullable().optional(),
@@ -81,7 +81,6 @@ const produtoSchema = z.object({
   foto08: z.string().nullable().optional(),
   foto09: z.string().nullable().optional(),
   foto10: z.string().nullable().optional(),
-  metragemTerreno: z.number().optional(),
   observacao: z.string().optional(),
 });
 
@@ -104,11 +103,8 @@ app.post("/produtos", upload.fields([
     // Mapeando fotos de acordo com a estrutura do produto
     const fotos = [];
     for (let i = 1; i <= 10; i++) {
-      if (req.files[`foto-${i}`]) {
-        fotos.push(req.files[`foto-${i}`][0].filename); // Armazenando o nome do arquivo
-      } else {
-        fotos.push(null); // Nenhuma foto foi enviada
-      }
+      const foto = req.files[`foto0${i}`] || req.files[`foto${i}`]; // Verificar nome da foto
+      fotos.push(foto ? foto[0].filename : null); // Armazenando o nome do arquivo ou null
     }
 
     // Validação com Zod
@@ -149,7 +145,6 @@ app.post("/produtos", upload.fields([
     return res.status(500).json({ message: "Erro ao salvar produto", error });
   }
 });
-
 
 // Método GET para listar produtos
 app.get("/produtos", async (req, res) => {

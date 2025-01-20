@@ -108,6 +108,11 @@ app.post(
         return res.status(400).json({ message: "É necessário enviar pelo menos uma foto." });
       }
 
+      // Verifica se o número de fotos não ultrapassa 10
+      if (todasAsFotos.length > 10) {
+        return res.status(400).json({ message: "O número máximo de fotos é 10." });
+      }
+
       // Valida os dados do produto usando o Zod
       const produtoData = produtoSchema.parse({
         ...req.body,
@@ -131,13 +136,14 @@ app.post(
         },
       });
 
-      return res.status(201).json(novoProduto);
+      return res.status(201).json({ message: "Produto criado com sucesso!", produto: novoProduto });
     } catch (error) {
       console.error("Erro ao salvar produto:", error);
-      return res.status(400).json({ message: "Erro ao salvar produto.", error });
+      return res.status(400).json({ message: error.message || "Erro ao salvar produto.", error });
     }
   }
 );
+
 
 // Método GET para listar produtos
 app.get("/produtos", async (req, res) => {

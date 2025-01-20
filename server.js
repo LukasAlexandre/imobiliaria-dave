@@ -98,7 +98,7 @@ app.post(
       );
 
       // Se não houver fotos enviadas via arquivo, verifica se foram enviadas URLs de fotos
-      const fotosExternas = req.body.fotos ? JSON.parse(req.body.fotos) : [];
+      const fotosExternas = req.body.fotos ? req.body.fotos : [];
 
       // Junta as fotos enviadas por upload e as fotos externas
       const todasAsFotos = [...fotosUrls, ...fotosExternas];
@@ -143,7 +143,6 @@ app.post(
     }
   }
 );
-
 
 // Método GET para listar produtos
 app.get("/produtos", async (req, res) => {

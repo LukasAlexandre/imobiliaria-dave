@@ -141,6 +141,7 @@ app.post("/produtos", upload.fields([
   } catch (error) {
     console.error("Erro ao salvar produto:", error);
     return res.status(500).json({ message: "Erro ao salvar produto", error });
+    onsole.log(produto);
   }
 });
 // Método GET para listar produtos

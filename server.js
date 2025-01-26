@@ -165,27 +165,32 @@ app.post(
 );
 
 
-const deleteProduct = async (id) => {
+
+// Rota DELETE para excluir um produto
+app.delete("/produtos/:id", async (req, res) => {
+  const { id } = req.params;
+
   try {
-    const response = await fetch(`https://imobiliaria-dave.onrender.com/produtos/${id}`, {
-      method: "DELETE",
+    // Tenta encontrar o produto pelo ID
+    const product = await prisma.produto.findUnique({
+      where: { id: Number(id) },
     });
 
-    if (!response.ok) {
-      throw new Error("Erro ao excluir o produto.");
+    if (!product) {
+      return res.status(404).json({ error: "Produto não encontrado." });
     }
 
-    setProducts((prevProducts) =>
-      prevProducts.filter((product) => product.id !== id)
-    );
-    setMessage("Produto excluído com sucesso!");
-    setMessageType("success");
-  } catch (error) {
-    setMessage(`Erro ao excluir o produto: ${error.message}`);
-    setMessageType("error");
-  }
-};
+    // Exclui o produto do banco de dados
+    await prisma.produto.delete({
+      where: { id: Number(id) },
+    });
 
+    res.status(200).json({ message: "Produto excluído com sucesso!" });
+  } catch (error) {
+    console.error("Erro ao excluir produto:", error);
+    res.status(500).json({ error: "Erro ao excluir produto." });
+  }
+});
 
 
 // Método GET para listar produtos

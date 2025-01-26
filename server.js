@@ -165,6 +165,26 @@ app.post(
 );
 
 
+const deleteProduct = async (id) => {
+  try {
+    const response = await fetch(`https://imobiliaria-dave.onrender.com/produtos/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      throw new Error("Erro ao excluir o produto.");
+    }
+
+    setProducts((prevProducts) =>
+      prevProducts.filter((product) => product.id !== id)
+    );
+    setMessage("Produto excluído com sucesso!");
+    setMessageType("success");
+  } catch (error) {
+    setMessage(`Erro ao excluir o produto: ${error.message}`);
+    setMessageType("error");
+  }
+};
 
 
 

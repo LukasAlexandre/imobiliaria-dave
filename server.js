@@ -97,17 +97,15 @@ app.post("/produtos", upload.fields([
   { name: "foto10", maxCount: 1 }
 ]), async (req, res) => {
   try {
-    // Extraindo dados do corpo da requisição
+    console.log("Arquivos recebidos:", req.files); // Log para depuração
     const produtoData = req.body;
-
-    // Mapeando fotos de acordo com a estrutura do produto
     const fotos = [];
+
     for (let i = 1; i <= 10; i++) {
-      const foto = req.files[`foto0${i}`] || req.files[`foto${i}`]; // Verificar nome da foto
-      fotos.push(foto ? foto[0].filename : null); // Armazenando o nome do arquivo ou null
+      const foto = req.files[`foto0${i}`] || req.files[`foto${i}`];
+      fotos.push(foto ? foto[0].filename : null);
     }
 
-    // Validação com Zod
     const validProdutoData = produtoSchema.parse({
       ...produtoData,
       foto01: fotos[0],
@@ -122,7 +120,6 @@ app.post("/produtos", upload.fields([
       foto10: fotos[9],
     });
 
-    // Salvando produto no banco de dados
     const produto = await prisma.produto.create({
       data: {
         ...validProdutoData,
@@ -138,6 +135,7 @@ app.post("/produtos", upload.fields([
         foto10: fotos[9],
       },
     });
+    console.log(produto);
 
     return res.status(201).json(produto);
   } catch (error) {
@@ -145,7 +143,6 @@ app.post("/produtos", upload.fields([
     return res.status(500).json({ message: "Erro ao salvar produto", error });
   }
 });
-
 // Método GET para listar produtos
 app.get("/produtos", async (req, res) => {
   try {
@@ -159,3 +156,4 @@ app.get("/produtos", async (req, res) => {
 
 // Inicia o servidor
 app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));
+

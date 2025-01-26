@@ -30,7 +30,18 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage }).fields([
+  { name: "foto01", maxCount: 1 },
+  { name: "foto02", maxCount: 1 },
+  { name: "foto03", maxCount: 1 },
+  { name: "foto04", maxCount: 1 },
+  { name: "foto05", maxCount: 1 },
+  { name: "foto06", maxCount: 1 },
+  { name: "foto07", maxCount: 1 },
+  { name: "foto08", maxCount: 1 },
+  { name: "foto09", maxCount: 1 },
+  { name: "foto10", maxCount: 1 },
+]);
 
 // CORS Configuration
 const corsOptions = {
@@ -84,45 +95,50 @@ const produtoSchema = z.object({
   observacao: z.string().optional(),
 });
 
-app.post("/produtos", upload.fields([
-  { name: "foto01", maxCount: 1 },
-  { name: "foto02", maxCount: 1 },
-  { name: "foto03", maxCount: 1 },
-  { name: "foto04", maxCount: 1 },
-  { name: "foto05", maxCount: 1 },
-  { name: "foto06", maxCount: 1 },
-  { name: "foto07", maxCount: 1 },
-  { name: "foto08", maxCount: 1 },
-  { name: "foto09", maxCount: 1 },
-  { name: "foto10", maxCount: 1 }
-]), async (req, res) => {
-  try {
-    console.log("Arquivos recebidos:", req.files); // Log para depuração
-    const produtoData = req.body;
-    const fotos = [];
 
-    for (let i = 1; i <= 10; i++) {
-      const foto = req.files[`foto0${i}`] || req.files[`foto${i}`];
-      fotos.push(foto ? foto[0].filename : null);
-    }
+app.post(
+  "/produtos",
+  upload, // Middleware de upload
+  async (req, res) => {
+    try {
+      console.log("Headers:", req.headers);
+      console.log("Arquivos recebidos:", req.files);
+      console.log("Body recebido antes da conversão:", req.body);
 
-    const validProdutoData = produtoSchema.parse({
-      ...produtoData,
-      foto01: fotos[0],
-      foto02: fotos[1],
-      foto03: fotos[2],
-      foto04: fotos[3],
-      foto05: fotos[4],
-      foto06: fotos[5],
-      foto07: fotos[6],
-      foto08: fotos[7],
-      foto09: fotos[8],
-      foto10: fotos[9],
-    });
+      if (!req.files) {
+        throw new Error("Nenhum arquivo foi enviado.");
+      }
 
-    const produto = await prisma.produto.create({
-      data: {
-        ...validProdutoData,
+      // Converta os campos numéricos do req.body
+      const body = {
+        ...req.body,
+        quartos: parseInt(req.body.quartos, 10),
+        banheiros: parseInt(req.body.banheiros, 10),
+        garagem: parseInt(req.body.garagem, 10),
+        preco: parseFloat(req.body.preco),
+        metragemCasa: parseInt(req.body.metragemCasa, 10),
+        metragemTerreno: req.body.metragemTerreno ? parseInt(req.body.metragemTerreno, 10) : undefined,
+      };
+
+      console.log("Body recebido após conversão:", body);
+
+      // Mapeando arquivos para as variáveis correspondentes
+      const fotos = [
+        req.files.foto01?.[0]?.filename || null,
+        req.files.foto02?.[0]?.filename || null,
+        req.files.foto03?.[0]?.filename || null,
+        req.files.foto04?.[0]?.filename || null,
+        req.files.foto05?.[0]?.filename || null,
+        req.files.foto06?.[0]?.filename || null,
+        req.files.foto07?.[0]?.filename || null,
+        req.files.foto08?.[0]?.filename || null,
+        req.files.foto09?.[0]?.filename || null,
+        req.files.foto10?.[0]?.filename || null,
+      ];
+
+      // Validação do esquema com Zod
+      const produtoData = produtoSchema.parse({
+        ...body,
         foto01: fotos[0],
         foto02: fotos[1],
         foto03: fotos[2],
@@ -133,17 +149,25 @@ app.post("/produtos", upload.fields([
         foto08: fotos[7],
         foto09: fotos[8],
         foto10: fotos[9],
-      },
-    });
-    console.log(produto);
+      });
 
-    return res.status(201).json(produto);
-  } catch (error) {
-    console.error("Erro ao salvar produto:", error);
-    return res.status(500).json({ message: "Erro ao salvar produto", error });
-    console.log(produto);
+      // Salvando no banco de dados
+      const produto = await prisma.produto.create({
+        data: produtoData,
+      });
+
+      return res.status(201).json(produto);
+    } catch (error) {
+      console.error("Erro ao salvar produto:", error.message);
+      return res.status(500).json({ message: "Erro ao salvar produto", error: error.message });
+    }
   }
-});
+);
+
+
+
+
+
 // Método GET para listar produtos
 app.get("/produtos", async (req, res) => {
   try {

@@ -204,6 +204,26 @@ app.get("/produtos", async (req, res) => {
   }
 });
 
+app.get("/produtos/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const produto = await prisma.produto.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!produto) {
+      return res.status(404).json({ message: "Imóvel não encontrado" });
+    }
+
+    res.json(produto);
+  } catch (error) {
+    console.error("Erro ao buscar imóvel:", error);
+    res.status(500).json({ message: "Erro interno no servidor" });
+  }
+});
+
+
 // Inicia o servidor
 app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));
 

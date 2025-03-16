@@ -20,7 +20,7 @@ model Produto {
   tipo            String
   metragemCasa    Int
   metragemTerreno Int
-  observacao      String
+  observacao      String?
   foto01          String?
   foto02          String?
   foto03          String?

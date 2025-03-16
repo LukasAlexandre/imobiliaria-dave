@@ -209,7 +209,7 @@ app.get("/produtos/:id", async (req, res) => {
 
   try {
     const produto = await prisma.produto.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: parseInt(id) }, 
     });
 
     if (!produto) {

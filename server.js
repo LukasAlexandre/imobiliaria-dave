@@ -70,6 +70,7 @@ connectToDatabase();
 
 // Zod Schema
 const produtoSchema = z.object({
+  status: z.enum(["Disponível", "Indisponível"]),
   titulo: z.string(),
   descricao: z.string(),
   quartos: z.number().int().min(0),
@@ -78,7 +79,6 @@ const produtoSchema = z.object({
   preco: z.number().min(0),
   localizacao: z.string(),
   tipo: z.string(),
-  status: z.enum(["Disponível", "Indisponível"]),
   metragemCasa: z.number().int().min(0),
   metragemTerreno: z.number().optional(),
   foto01: z.string().nullable().optional(),
@@ -107,6 +107,7 @@ app.post("/produtos", upload, async (req, res) => {
 
     const body = {
       ...req.body,
+      status: req.body.status || "Disponível",
       quartos: parseInt(req.body.quartos, 10),
       banheiros: parseInt(req.body.banheiros, 10),
       garagem: parseInt(req.body.garagem, 10),
@@ -115,7 +116,6 @@ app.post("/produtos", upload, async (req, res) => {
       metragemTerreno: req.body.metragemTerreno
         ? parseInt(req.body.metragemTerreno, 10)
         : undefined,
-      status: req.body.status || "Disponível",
     };
 
     console.log("Body após conversão:", body);

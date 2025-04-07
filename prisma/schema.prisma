@@ -10,18 +10,18 @@ datasource db {
 
 model Produto {
   id              Int     @id @default(autoincrement())
+  status          String
   titulo          String
   descricao       String
-  preco           Float
   quartos         Int
   banheiros       Int
   garagem         Int
+  preco           Float
   localizacao     String
   tipo            String
-  status          String       // ✅ Adiciona esta linha!
-  metragemCasa    Int
+  metragemCasa    Int?
   metragemTerreno Int?
-  observacao      String?
+  observacao      String? @db.LongText
   foto01          String?
   foto02          String?
   foto03          String?

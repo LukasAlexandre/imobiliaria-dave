@@ -70,7 +70,6 @@ connectToDatabase();
 
 // Zod Schema
 const produtoSchema = z.object({
-  status: z.enum(["Disponível", "Indisponível"]),
   titulo: z.string(),
   descricao: z.string(),
   quartos: z.number().int().min(0),
@@ -107,7 +106,6 @@ app.post("/produtos", upload, async (req, res) => {
 
     const body = {
       ...req.body,
-      status: req.body.status || "Disponível",
       quartos: parseInt(req.body.quartos, 10),
       banheiros: parseInt(req.body.banheiros, 10),
       garagem: parseInt(req.body.garagem, 10),

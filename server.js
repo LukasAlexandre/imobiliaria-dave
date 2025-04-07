@@ -14,17 +14,17 @@ const app = express();
 const prisma = new PrismaClient();
 const port = process.env.PORT || 3000;
 
-// Configuração para simular __dirname em ES Modules
+// Simular __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configuração da pasta local para upload
+// Pasta de upload
 const uploadPath = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
 
-// Configuração de upload de arquivo com multer
+// Configuração do multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadPath),
   filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
@@ -43,20 +43,19 @@ const upload = multer({ storage: storage }).fields([
   { name: "foto10", maxCount: 1 },
 ]);
 
-// CORS Configuration
 const corsOptions = {
-  origin: "*", // Permitir todas as origens para teste (substitua com domínios específicos em produção)
+  origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
-// Middleware
+// Middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors(corsOptions));
 app.use("/uploads", express.static(uploadPath));
 
-// Teste de conexão com o banco
+// Conexão com banco
 const connectToDatabase = async () => {
   try {
     console.log("🔄 Tentando conectar ao banco...");
@@ -67,10 +66,9 @@ const connectToDatabase = async () => {
     process.exit(1);
   }
 };
-
 connectToDatabase();
 
-// Validação do esquema com Zod
+// Zod Schema
 const produtoSchema = z.object({
   titulo: z.string(),
   descricao: z.string(),
@@ -80,6 +78,7 @@ const produtoSchema = z.object({
   preco: z.number().min(0),
   localizacao: z.string(),
   tipo: z.string(),
+  status: z.enum(["Disponível", "Indisponível"]),
   metragemCasa: z.number().int().min(0),
   metragemTerreno: z.number().optional(),
   foto01: z.string().nullable().optional(),
@@ -95,83 +94,78 @@ const produtoSchema = z.object({
   observacao: z.string().optional(),
 });
 
+// Rota POST
+app.post("/produtos", upload, async (req, res) => {
+  try {
+    console.log("Headers:", req.headers);
+    console.log("Arquivos recebidos:", req.files);
+    console.log("Body recebido antes da conversão:", req.body);
 
-app.post(
-  "/produtos",
-  upload, // Middleware de upload
-  async (req, res) => {
-    try {
-      console.log("Headers:", req.headers);
-      console.log("Arquivos recebidos:", req.files);
-      console.log("Body recebido antes da conversão:", req.body);
-
-      if (!req.files) {
-        throw new Error("Nenhum arquivo foi enviado.");
-      }
-
-      // Converta os campos numéricos do req.body
-      const body = {
-        ...req.body,
-        quartos: parseInt(req.body.quartos, 10),
-        banheiros: parseInt(req.body.banheiros, 10),
-        garagem: parseInt(req.body.garagem, 10),
-        preco: parseFloat(req.body.preco),
-        metragemCasa: parseInt(req.body.metragemCasa, 10),
-        metragemTerreno: req.body.metragemTerreno ? parseInt(req.body.metragemTerreno, 10) : undefined,
-      };
-
-      console.log("Body recebido após conversão:", body);
-
-      // Mapeando arquivos para as variáveis correspondentes
-      const fotos = [
-        req.files.foto01?.[0]?.filename || null,
-        req.files.foto02?.[0]?.filename || null,
-        req.files.foto03?.[0]?.filename || null,
-        req.files.foto04?.[0]?.filename || null,
-        req.files.foto05?.[0]?.filename || null,
-        req.files.foto06?.[0]?.filename || null,
-        req.files.foto07?.[0]?.filename || null,
-        req.files.foto08?.[0]?.filename || null,
-        req.files.foto09?.[0]?.filename || null,
-        req.files.foto10?.[0]?.filename || null,
-      ];
-
-      // Validação do esquema com Zod
-      const produtoData = produtoSchema.parse({
-        ...body,
-        foto01: fotos[0],
-        foto02: fotos[1],
-        foto03: fotos[2],
-        foto04: fotos[3],
-        foto05: fotos[4],
-        foto06: fotos[5],
-        foto07: fotos[6],
-        foto08: fotos[7],
-        foto09: fotos[8],
-        foto10: fotos[9],
-      });
-
-      // Salvando no banco de dados
-      const produto = await prisma.produto.create({
-        data: produtoData,
-      });
-
-      return res.status(201).json(produto);
-    } catch (error) {
-      console.error("Erro ao salvar produto:", error.message);
-      return res.status(500).json({ message: "Erro ao salvar produto", error: error.message });
+    if (!req.files) {
+      throw new Error("Nenhum arquivo foi enviado.");
     }
+
+    const body = {
+      ...req.body,
+      quartos: parseInt(req.body.quartos, 10),
+      banheiros: parseInt(req.body.banheiros, 10),
+      garagem: parseInt(req.body.garagem, 10),
+      preco: parseFloat(req.body.preco),
+      metragemCasa: parseInt(req.body.metragemCasa, 10),
+      metragemTerreno: req.body.metragemTerreno
+        ? parseInt(req.body.metragemTerreno, 10)
+        : undefined,
+      status: req.body.status || "Disponível",
+    };
+
+    console.log("Body após conversão:", body);
+
+    const fotos = [
+      req.files.foto01?.[0]?.filename || null,
+      req.files.foto02?.[0]?.filename || null,
+      req.files.foto03?.[0]?.filename || null,
+      req.files.foto04?.[0]?.filename || null,
+      req.files.foto05?.[0]?.filename || null,
+      req.files.foto06?.[0]?.filename || null,
+      req.files.foto07?.[0]?.filename || null,
+      req.files.foto08?.[0]?.filename || null,
+      req.files.foto09?.[0]?.filename || null,
+      req.files.foto10?.[0]?.filename || null,
+    ];
+
+    const produtoData = produtoSchema.parse({
+      ...body,
+      foto01: fotos[0],
+      foto02: fotos[1],
+      foto03: fotos[2],
+      foto04: fotos[3],
+      foto05: fotos[4],
+      foto06: fotos[5],
+      foto07: fotos[6],
+      foto08: fotos[7],
+      foto09: fotos[8],
+      foto10: fotos[9],
+    });
+
+    const produto = await prisma.produto.create({
+      data: produtoData,
+    });
+
+    return res.status(201).json(produto);
+  } catch (error) {
+    console.error("Erro ao salvar produto:", error.message);
+    return res.status(500).json({
+      message: "Erro ao salvar produto",
+      error: error.message,
+    });
   }
-);
+});
 
-
-
-// Rota DELETE para excluir um produto
+// DELETE
 app.delete("/produtos/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Tenta encontrar o produto pelo ID
     const product = await prisma.produto.findUnique({
       where: { id: Number(id) },
     });
@@ -180,7 +174,6 @@ app.delete("/produtos/:id", async (req, res) => {
       return res.status(404).json({ error: "Produto não encontrado." });
     }
 
-    // Exclui o produto do banco de dados
     await prisma.produto.delete({
       where: { id: Number(id) },
     });
@@ -192,8 +185,7 @@ app.delete("/produtos/:id", async (req, res) => {
   }
 });
 
-
-// Método GET para listar produtos
+// GET todos
 app.get("/produtos", async (req, res) => {
   try {
     const produtos = await prisma.produto.findMany();
@@ -204,12 +196,13 @@ app.get("/produtos", async (req, res) => {
   }
 });
 
+// GET por ID
 app.get("/produtos/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
     const produto = await prisma.produto.findUnique({
-      where: { id: parseInt(id) }, 
+      where: { id: parseInt(id) },
     });
 
     if (!produto) {
@@ -223,7 +216,5 @@ app.get("/produtos/:id", async (req, res) => {
   }
 });
 
-
-// Inicia o servidor
-app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));
-
+// Iniciar servidor
+app.listen(port, () => console.log(`🚀 Servidor rodando na porta ${port}`));

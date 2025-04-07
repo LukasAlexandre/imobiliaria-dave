@@ -9,17 +9,18 @@ datasource db {
 }
 
 model Produto {
-  id              Int      @id @default(autoincrement())
+  id              Int     @id @default(autoincrement())
   titulo          String
   descricao       String
+  preco           Float
   quartos         Int
   banheiros       Int
   garagem         Int
-  preco           Float
   localizacao     String
   tipo            String
+  status          String       // ✅ Adiciona esta linha!
   metragemCasa    Int
-  metragemTerreno Int
+  metragemTerreno Int?
   observacao      String?
   foto01          String?
   foto02          String?

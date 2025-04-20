@@ -14,17 +14,14 @@ const app = express();
 const prisma = new PrismaClient();
 const port = process.env.PORT || 3000;
 
-// Simular __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Pasta de upload
 const uploadPath = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
 
-// Configuração do multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadPath),
   filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
@@ -49,13 +46,11 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
-// Middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors(corsOptions));
 app.use("/uploads", express.static(uploadPath));
 
-// Conexão com banco
 const connectToDatabase = async () => {
   try {
     console.log("🔄 Tentando conectar ao banco...");
@@ -68,10 +63,10 @@ const connectToDatabase = async () => {
 };
 connectToDatabase();
 
-// Zod Schema
 const produtoSchema = z.object({
   titulo: z.string(),
   descricao: z.string(),
+  descricaoPrevia: z.string(),
   quartos: z.number().int().min(0),
   banheiros: z.number().int().min(0),
   garagem: z.number().int().min(0),
@@ -93,7 +88,6 @@ const produtoSchema = z.object({
   observacao: z.string().optional(),
 });
 
-// Rota POST
 app.post("/produtos", upload, async (req, res) => {
   try {
     console.log("Headers:", req.headers);
@@ -114,6 +108,7 @@ app.post("/produtos", upload, async (req, res) => {
       metragemTerreno: req.body.metragemTerreno
         ? parseInt(req.body.metragemTerreno, 10)
         : undefined,
+      descricaoPrevia: req.body.descricaoPrevia,
     };
 
     console.log("Body após conversão:", body);
@@ -159,7 +154,6 @@ app.post("/produtos", upload, async (req, res) => {
   }
 });
 
-// DELETE
 app.delete("/produtos/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -183,7 +177,6 @@ app.delete("/produtos/:id", async (req, res) => {
   }
 });
 
-// GET todos
 app.get("/produtos", async (req, res) => {
   try {
     const produtos = await prisma.produto.findMany();
@@ -194,7 +187,6 @@ app.get("/produtos", async (req, res) => {
   }
 });
 
-// GET por ID
 app.get("/produtos/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -214,5 +206,4 @@ app.get("/produtos/:id", async (req, res) => {
   }
 });
 
-// Iniciar servidor
 app.listen(port, () => console.log(`🚀 Servidor rodando na porta ${port}`));

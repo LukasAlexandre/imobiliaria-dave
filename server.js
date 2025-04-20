@@ -67,6 +67,7 @@ const produtoSchema = z.object({
   titulo: z.string(),
   descricao: z.string(),
   descricaoPrevia: z.string(),
+  status: z.enum(["Disponível", "Indisponível"]),
   quartos: z.number().int().min(0),
   banheiros: z.number().int().min(0),
   garagem: z.number().int().min(0),
@@ -109,6 +110,7 @@ app.post("/produtos", upload, async (req, res) => {
         ? parseInt(req.body.metragemTerreno, 10)
         : undefined,
       descricaoPrevia: req.body.descricaoPrevia,
+      status: req.body.status,
     };
 
     console.log("Body após conversão:", body);

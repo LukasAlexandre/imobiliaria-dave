@@ -30,7 +30,7 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 15 * 1024 * 1024 }, // 5MB por imagem
+  limits: { fileSize: 15 * 1024 * 1024 },
 }).fields(Array.from({ length: 10 }, (_, i) => ({
   name: `foto0${i + 1}`,
   maxCount: 1,
@@ -75,7 +75,9 @@ const produtoSchema = z.object({
 // POST
 app.post("/produtos", upload, async (req, res) => {
   try {
+    console.log("📥 Requisição recebida para cadastro de produto");
     if (!req.files || Object.keys(req.files).length === 0) {
+      console.warn("⚠️ Nenhuma imagem foi enviada.");
       return res.status(400).json({ message: "Nenhuma imagem foi enviada." });
     }
 
@@ -95,6 +97,9 @@ app.post("/produtos", upload, async (req, res) => {
       req.files[`foto0${i + 1}`]?.[0]?.path || null
     );
 
+    console.log("🧾 Campos recebidos:", body);
+    console.log("🖼️ Fotos processadas:", fotos);
+
     const produtoData = produtoSchema.parse({
       ...body,
       foto01: fotos[0],
@@ -112,8 +117,11 @@ app.post("/produtos", upload, async (req, res) => {
     const produto = await prisma.produto.create({ data: produtoData });
     res.status(201).json(produto);
   } catch (error) {
-    console.error("Erro ao salvar produto:", error.message);
-    res.status(500).json({ message: "Erro ao salvar produto", error: error.message });
+    console.error("❌ Erro ao salvar produto:", error);
+    res.status(500).json({
+      message: "Erro ao salvar produto",
+      error: error instanceof Error ? error.message : "Erro desconhecido",
+    });
   }
 });
 
@@ -123,6 +131,7 @@ app.get("/produtos", async (req, res) => {
     const produtos = await prisma.produto.findMany();
     res.status(200).json(produtos);
   } catch (error) {
+    console.error("❌ Erro ao listar produtos:", error);
     res.status(500).json({ message: "Erro ao listar produtos", error });
   }
 });
@@ -135,14 +144,14 @@ app.get("/produtos/:id", async (req, res) => {
     if (!produto) return res.status(404).json({ message: "Produto não encontrado" });
     res.json(produto);
   } catch (error) {
+    console.error("❌ Erro ao buscar produto:", error);
     res.status(500).json({ message: "Erro interno", error });
   }
 });
 
-// PUT atualizar
+// PUT
 app.put("/produtos/:id", upload, async (req, res) => {
   const { id } = req.params;
-
   try {
     const body = {
       ...req.body,
@@ -159,6 +168,10 @@ app.put("/produtos/:id", upload, async (req, res) => {
     const fotos = Array.from({ length: 10 }, (_, i) =>
       req.files[`foto0${i + 1}`]?.[0]?.path || req.body[`foto0${i + 1}`] || null
     );
+
+    console.log("🔄 Atualizando produto ID:", id);
+    console.log("📦 Body:", body);
+    console.log("📷 Fotos:", fotos);
 
     const produtoData = produtoSchema.parse({
       ...body,
@@ -181,7 +194,11 @@ app.put("/produtos/:id", upload, async (req, res) => {
 
     res.json(produto);
   } catch (error) {
-    res.status(500).json({ message: "Erro ao atualizar produto", error: error.message });
+    console.error("❌ Erro ao atualizar produto:", error);
+    res.status(500).json({
+      message: "Erro ao atualizar produto",
+      error: error instanceof Error ? error.message : "Erro desconhecido",
+    });
   }
 });
 
@@ -192,6 +209,7 @@ app.delete("/produtos/:id", async (req, res) => {
     await prisma.produto.delete({ where: { id: Number(id) } });
     res.status(200).json({ message: "Produto excluído com sucesso!" });
   } catch (error) {
+    console.error("❌ Erro ao excluir produto:", error);
     res.status(500).json({ error: "Erro ao excluir produto" });
   }
 });

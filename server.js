@@ -13,12 +13,14 @@ const app = express();
 const prisma = new PrismaClient();
 const port = process.env.PORT || 3000;
 
+// Cloudinary config
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Multer + Cloudinary storage
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
@@ -30,7 +32,7 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 15 * 1024 * 1024 },
+  limits: { fileSize: 15 * 1024 * 1024 }, // 15MB
 }).fields(Array.from({ length: 10 }, (_, i) => ({
   name: `foto0${i + 1}`,
   maxCount: 1,
@@ -46,6 +48,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors(corsOptions));
 
+// Schema de validação
 const produtoSchema = z.object({
   titulo: z.string(),
   descricao: z.string(),
@@ -76,10 +79,6 @@ const produtoSchema = z.object({
 app.post("/produtos", upload, async (req, res) => {
   try {
     console.log("📥 Requisição recebida para cadastro de produto");
-    if (!req.files || Object.keys(req.files).length === 0) {
-      console.warn("⚠️ Nenhuma imagem foi enviada.");
-      return res.status(400).json({ message: "Nenhuma imagem foi enviada." });
-    }
 
     const body = {
       ...req.body,
@@ -94,11 +93,11 @@ app.post("/produtos", upload, async (req, res) => {
     };
 
     const fotos = Array.from({ length: 10 }, (_, i) =>
-      req.files[`foto0${i + 1}`]?.[0]?.path || null
+      req.files?.[`foto0${i + 1}`]?.[0]?.path || null
     );
 
-    console.log("🧾 Campos recebidos:", body);
-    console.log("🖼️ Fotos processadas:", fotos);
+    console.log("🧾 Body:", body);
+    console.log("🖼️ Fotos:", fotos);
 
     const produtoData = produtoSchema.parse({
       ...body,
@@ -118,9 +117,12 @@ app.post("/produtos", upload, async (req, res) => {
     res.status(201).json(produto);
   } catch (error) {
     console.error("❌ Erro ao salvar produto:", error);
+    if (error instanceof z.ZodError) {
+      console.error("🔎 Erros de validação:", error.errors);
+    }
     res.status(500).json({
       message: "Erro ao salvar produto",
-      error: error instanceof Error ? error.message : "Erro desconhecido",
+      error: error instanceof Error ? error.message : JSON.stringify(error),
     });
   }
 });
@@ -166,7 +168,7 @@ app.put("/produtos/:id", upload, async (req, res) => {
     };
 
     const fotos = Array.from({ length: 10 }, (_, i) =>
-      req.files[`foto0${i + 1}`]?.[0]?.path || req.body[`foto0${i + 1}`] || null
+      req.files?.[`foto0${i + 1}`]?.[0]?.path || req.body[`foto0${i + 1}`] || null
     );
 
     console.log("🔄 Atualizando produto ID:", id);
@@ -195,9 +197,12 @@ app.put("/produtos/:id", upload, async (req, res) => {
     res.json(produto);
   } catch (error) {
     console.error("❌ Erro ao atualizar produto:", error);
+    if (error instanceof z.ZodError) {
+      console.error("🔎 Erros de validação:", error.errors);
+    }
     res.status(500).json({
       message: "Erro ao atualizar produto",
-      error: error instanceof Error ? error.message : "Erro desconhecido",
+      error: error instanceof Error ? error.message : JSON.stringify(error),
     });
   }
 });
@@ -214,4 +219,6 @@ app.delete("/produtos/:id", async (req, res) => {
   }
 });
 
-app.listen(port, () => console.log(`🚀 Servidor rodando na porta ${port}`));
+app.listen(port, () =>
+  console.log(`🚀 Servidor rodando na porta ${port}`)
+);

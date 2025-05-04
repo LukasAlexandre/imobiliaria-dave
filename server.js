@@ -13,14 +13,13 @@ const app = express();
 const prisma = new PrismaClient();
 const port = process.env.PORT || 3000;
 
-// Cloudinary config
+// Configuração Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Multer + Cloudinary storage
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
@@ -79,6 +78,9 @@ const produtoSchema = z.object({
 app.post("/produtos", upload, async (req, res) => {
   try {
     console.log("📥 Requisição recebida para cadastro de produto");
+    console.log("Headers:", req.headers);
+    console.log("Body bruto:", req.body);
+    console.log("Files:", req.files);
 
     const body = {
       ...req.body,
@@ -95,9 +97,6 @@ app.post("/produtos", upload, async (req, res) => {
     const fotos = Array.from({ length: 10 }, (_, i) =>
       req.files?.[`foto0${i + 1}`]?.[0]?.path || null
     );
-
-    console.log("🧾 Body:", body);
-    console.log("🖼️ Fotos:", fotos);
 
     const produtoData = produtoSchema.parse({
       ...body,
@@ -116,27 +115,24 @@ app.post("/produtos", upload, async (req, res) => {
     const produto = await prisma.produto.create({ data: produtoData });
     res.status(201).json(produto);
   } catch (error) {
-    console.error("❌ Erro ao salvar produto:", error);
+    console.error("❌ Erro ao salvar produto:");
     if (error instanceof z.ZodError) {
-      console.error("📛 Erro de validação:", error.errors);
+      console.error("Erro de validação Zod:", error.errors);
     }
     if (error instanceof Error) {
-      console.error("📛 Mensagem:", error.message);
+      console.error("Erro:", error.message);
     } else {
-      console.error("📛 Objeto desconhecido:", JSON.stringify(error));
+      console.error("Erro desconhecido:", JSON.stringify(error));
     }
 
-    if (error instanceof z.ZodError) {
-      console.error("🔎 Erros de validação:", error.errors);
-    }
     res.status(500).json({
       message: "Erro ao salvar produto",
-      error: error instanceof Error ? error.message : JSON.stringify(error),
+      error: error instanceof Error ? error.message : "Erro desconhecido",
     });
   }
 });
 
-// GET todos
+// GET
 app.get("/produtos", async (req, res) => {
   try {
     const produtos = await prisma.produto.findMany();
@@ -149,9 +145,10 @@ app.get("/produtos", async (req, res) => {
 
 // GET por ID
 app.get("/produtos/:id", async (req, res) => {
-  const { id } = req.params;
   try {
-    const produto = await prisma.produto.findUnique({ where: { id: Number(id) } });
+    const produto = await prisma.produto.findUnique({
+      where: { id: Number(req.params.id) },
+    });
     if (!produto) return res.status(404).json({ message: "Produto não encontrado" });
     res.json(produto);
   } catch (error) {
@@ -162,7 +159,6 @@ app.get("/produtos/:id", async (req, res) => {
 
 // PUT
 app.put("/produtos/:id", upload, async (req, res) => {
-  const { id } = req.params;
   try {
     const body = {
       ...req.body,
@@ -180,10 +176,6 @@ app.put("/produtos/:id", upload, async (req, res) => {
       req.files?.[`foto0${i + 1}`]?.[0]?.path || req.body[`foto0${i + 1}`] || null
     );
 
-    console.log("🔄 Atualizando produto ID:", id);
-    console.log("📦 Body:", body);
-    console.log("📷 Fotos:", fotos);
-
     const produtoData = produtoSchema.parse({
       ...body,
       foto01: fotos[0],
@@ -199,28 +191,24 @@ app.put("/produtos/:id", upload, async (req, res) => {
     });
 
     const produto = await prisma.produto.update({
-      where: { id: Number(id) },
+      where: { id: Number(req.params.id) },
       data: produtoData,
     });
 
     res.json(produto);
   } catch (error) {
     console.error("❌ Erro ao atualizar produto:", error);
-    if (error instanceof z.ZodError) {
-      console.error("🔎 Erros de validação:", error.errors);
-    }
     res.status(500).json({
       message: "Erro ao atualizar produto",
-      error: error instanceof Error ? error.message : JSON.stringify(error),
+      error: error instanceof Error ? error.message : "Erro desconhecido",
     });
   }
 });
 
 // DELETE
 app.delete("/produtos/:id", async (req, res) => {
-  const { id } = req.params;
   try {
-    await prisma.produto.delete({ where: { id: Number(id) } });
+    await prisma.produto.delete({ where: { id: Number(req.params.id) } });
     res.status(200).json({ message: "Produto excluído com sucesso!" });
   } catch (error) {
     console.error("❌ Erro ao excluir produto:", error);
@@ -228,6 +216,4 @@ app.delete("/produtos/:id", async (req, res) => {
   }
 });
 
-app.listen(port, () =>
-  console.log(`🚀 Servidor rodando na porta ${port}`)
-);
+app.listen(port, () => console.log(`🚀 Servidor rodando na porta ${port}`));

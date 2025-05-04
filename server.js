@@ -118,6 +118,15 @@ app.post("/produtos", upload, async (req, res) => {
   } catch (error) {
     console.error("❌ Erro ao salvar produto:", error);
     if (error instanceof z.ZodError) {
+      console.error("📛 Erro de validação:", error.errors);
+    }
+    if (error instanceof Error) {
+      console.error("📛 Mensagem:", error.message);
+    } else {
+      console.error("📛 Objeto desconhecido:", JSON.stringify(error));
+    }
+
+    if (error instanceof z.ZodError) {
       console.error("🔎 Erros de validação:", error.errors);
     }
     res.status(500).json({

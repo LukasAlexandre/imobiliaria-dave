@@ -116,6 +116,7 @@ app.post("/produtos", upload, async (req, res) => {
     res.status(201).json(produto);
   } catch (error) {
     console.error("❌ Erro ao salvar produto:");
+    console.error(error);
     if (error instanceof z.ZodError) {
       console.error("Erro de validação Zod:", error.errors);
     }

@@ -23,5 +23,5 @@ model Produto {
   observacao      String? @db.LongText
   descricaoPrevia String
   status          String
-  images          String
+  images          String  @db.LongText
 }

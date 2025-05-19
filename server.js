@@ -50,7 +50,7 @@ app.post("/produtos", async (req, res) => {
       preco: parseFloat(req.body.preco),
       metragemCasa: parseInt(req.body.metragemCasa, 10),
       metragemTerreno: req.body.metragemTerreno ? parseInt(req.body.metragemTerreno, 10) : undefined,
-      images: req.body.images || [],
+       images: typeof req.body.images === "string" ? JSON.parse(req.body.images) : req.body.images,
     };
 
     const parsed = produtoSchema.parse(body);

@@ -36,7 +36,7 @@ const produtoSchema = z.object({
   metragemCasa: z.number().int().min(0),
   metragemTerreno: z.number().int().optional(),
   observacao: z.string().optional(),
-  images: z.array(z.string()).max(10), // Aqui tratamos as URLs da Cloudinary
+  images: z.array(z.string()).max(10),
 });
 
 // POST /produtos
@@ -58,7 +58,7 @@ app.post("/produtos", async (req, res) => {
     const produto = await prisma.produto.create({
       data: {
         ...parsed,
-        images: JSON.stringify(parsed.images), // 👈
+        images: JSON.stringify(parsed.images),
       },
     });
 
@@ -76,7 +76,11 @@ app.post("/produtos", async (req, res) => {
 app.get("/produtos", async (req, res) => {
   try {
     const produtos = await prisma.produto.findMany();
-    res.status(200).json(produtos);
+    const produtosComImagens = produtos.map(produto => ({
+      ...produto,
+      images: produto.images ? JSON.parse(produto.images) : [],
+    }));
+    res.status(200).json(produtosComImagens);
   } catch (error) {
     res.status(500).json({ message: "Erro ao listar produtos", error });
   }

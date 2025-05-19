@@ -7,21 +7,20 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
-
 model Produto {
-  id              Int     @id @default(autoincrement())
-  titulo          String
-  descricao       String
-  quartos         Int
-  banheiros       Int
-  garagem         Int
-  preco           Float
-  localizacao     String
-  tipo            String
-  metragemCasa    Int?
-  metragemTerreno Int?
-  observacao      String? @db.LongText
-  descricaoPrevia String
-  status          String
-  images          String  @db.LongText
+  id                Int      @id @default(autoincrement())
+  titulo            String
+  descricao         String
+  descricaoPrevia   String
+  preco             Float
+  quartos           Int
+  banheiros         Int
+  garagem           Int
+  localizacao       String
+  tipo              String
+  metragemCasa      Int
+  metragemTerreno   Int?
+  status            String
+  observacao        String?
+  images            String
 }

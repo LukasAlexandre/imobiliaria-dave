@@ -21,7 +21,7 @@ model Produto {
   metragemCasa    Int?
   metragemTerreno Int?
   observacao      String? @db.LongText
-  descricaoPrevia String
+  descricaoPrevia String?
   status          String
   images          String  @db.LongText
 }

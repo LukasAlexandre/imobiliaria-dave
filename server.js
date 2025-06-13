@@ -85,6 +85,28 @@ app.get("/produtos", async (req, res) => {
     res.status(500).json({ message: "Erro ao listar produtos", error });
   }
 });
+// GET /produtos/:id
+app.get("/produtos/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const produto = await prisma.produto.findUnique({ where: { id } });
+
+    if (!produto) {
+      return res.status(404).json({ message: "Produto não encontrado" });
+    }
+
+    const produtoComImagens = {
+      ...produto,
+      images: produto.images ? JSON.parse(produto.images) : [],
+    };
+
+    res.status(200).json(produtoComImagens);
+  } catch (error) {
+    console.error("Erro ao buscar produto:", error);
+    res.status(500).json({ message: "Erro ao buscar produto", error: error.message });
+  }
+});
+
 
 // DELETE /produtos/:id
 app.delete("/produtos/:id", async (req, res) => {
